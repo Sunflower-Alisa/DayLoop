@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  dayloop:
+    build: .
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+    volumes:
+      - dayloop-data:/app/backend/data
+
+volumes:
+  dayloop-data:

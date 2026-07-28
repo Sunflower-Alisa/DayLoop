@@ -1,0 +1,19 @@
+{
+  "name": "dayloop-backend",
+  "version": "1.0.0",
+  "description": "DayLoop daily planner backend",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js"
+  },
+  "dependencies": {
+    "@ngrok/ngrok": "^1.7.0",
+    "bcryptjs": "^3.0.3",
+    "better-sqlite3": "^11.0.0",
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.3",
+    "node-cron": "^4.6.0"
+  }
+}

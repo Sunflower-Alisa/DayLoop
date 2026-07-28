@@ -1,0 +1,15 @@
+{
+  "appId": "com.dayloop.app",
+  "appName": "DayLoop",
+  "webDir": "dist",
+  "bundledWebRuntime": false,
+  "server": {
+    "hostname": "localhost",
+    "androidScheme": "https",
+    "iosScheme": "https"
+  },
+  "android": {
+    "allowMixedContent": true,
+    "captureInput": true
+  }
+}

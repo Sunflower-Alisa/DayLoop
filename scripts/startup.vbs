@@ -1,0 +1,1 @@
+CreateObject("WScript.Shell").Run "D:\02.Personal\04..代码\Code\DayLoop\scripts\start-all.cmd", 0, False
