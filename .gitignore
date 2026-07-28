@@ -1,6 +1,14 @@
 node_modules/
 backend/data/*.db
+backend/data/*.db-*
 backend/data/uploads/
+!backend/data/.gitkeep
 frontend/dist/
+.vite/
 .env
 *.log
+backend-dotnet/bin/
+backend-dotnet/obj/
+backend-dotnet-tests/bin/
+backend-dotnet-tests/obj/
+nul
