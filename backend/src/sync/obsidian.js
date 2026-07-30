@@ -26,9 +26,36 @@ function ensureDir(dir) {
   }
 }
 
-function writeFile(filePath, content) {
+const UPLOADS_DIR = path.join(__dirname, '..', '..', 'data', 'uploads');
+
+function processImageRefs(content, vaultImagesDir) {
+  const regex = /!\[.*?\]\(\/uploads\/([^)]+)\)/g;
+  let match;
+  let result = content;
+  while ((match = regex.exec(content)) !== null) {
+    const filename = match[1];
+    const srcPath = path.join(UPLOADS_DIR, filename);
+    if (fs.existsSync(srcPath)) {
+      ensureDir(vaultImagesDir);
+      const destPath = path.join(vaultImagesDir, filename);
+      try {
+        fs.copyFileSync(srcPath, destPath);
+      } catch (e) {
+        console.error(`[ObsidianSync] Failed to copy image ${filename}: ${e.message}`);
+      }
+    }
+    result = result.replace(match[0], `![${filename}](${path.posix.join('..', '图片', filename)})`);
+  }
+  return result;
+}
+
+function writeFile(filePath, content, vaultPath) {
   try {
     ensureDir(path.dirname(filePath));
+    if (vaultPath) {
+      const vaultImagesDir = path.join(vaultPath, 'DayLoop', '图片');
+      content = processImageRefs(content, vaultImagesDir);
+    }
     fs.writeFileSync(filePath, content, 'utf-8');
   } catch (e) {
     console.error(`[ObsidianSync] Failed to write ${filePath}: ${e.message}`);
@@ -98,7 +125,7 @@ function syncAllNotes() {
       '',
     ].filter(Boolean).join('\n');
 
-    writeFile(filePath, frontmatter + (note.content || ''));
+    writeFile(filePath, frontmatter + (note.content || ''), vaultPath);
   }
 
   // Write book-group notes as merged files
@@ -127,7 +154,7 @@ function syncAllNotes() {
     ].filter(Boolean).join('\n');
 
     const body = `# 《${book}》读书笔记\n\n${entries}`;
-    writeFile(filePath, frontmatter + body);
+    writeFile(filePath, frontmatter + body, vaultPath);
   }
 
   return total;
@@ -154,7 +181,7 @@ function syncAllReviews() {
       '---',
       '',
     ].join('\n');
-    writeFile(filePath, frontmatter + (review.content || ''));
+    writeFile(filePath, frontmatter + (review.content || ''), vaultPath);
   }
   return allReviews.length;
 }
@@ -228,7 +255,7 @@ function syncAllAchievements() {
         task.planned_duration ? `**计划时长**: ${task.planned_duration}分钟` : null,
       ].filter(Boolean).join('\n');
 
-      writeFile(filePath, frontmatter + body);
+      writeFile(filePath, frontmatter + body, vaultPath);
     } else {
       // Multiple tasks with same title → merged file without date prefix
       const filePath = path.join(dir, `${slug}.md`);
@@ -266,7 +293,7 @@ function syncAllAchievements() {
         '',
       ].filter(Boolean).join('\n');
 
-      writeFile(filePath, frontmatter + `# ${title}\n\n${entries.join('\n\n---\n\n')}`);
+      writeFile(filePath, frontmatter + `# ${title}\n\n${entries.join('\n\n---\n\n')}`, vaultPath);
     }
   }
 
@@ -300,7 +327,7 @@ function syncAllAchievements() {
       '',
     ].filter(Boolean).join('\n');
 
-    writeFile(filePath, frontmatter + `# 《${book}》读书笔记\n\n${entries}`);
+    writeFile(filePath, frontmatter + `# 《${book}》读书笔记\n\n${entries}`, vaultPath);
   }
 
   return allAchievements.length;

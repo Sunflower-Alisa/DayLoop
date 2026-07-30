@@ -11,6 +11,8 @@ const stats = ref({
   completionRate: 0,
   totalNotes: 0,
   totalReviews: 0,
+  totalPlannedDuration: 0,
+  totalActualDuration: 0,
   weeklyStats: [] as { week: string; total: number; completed: number }[],
 })
 
@@ -27,6 +29,13 @@ onMounted(async () => {
 
 function maxCompleted(stats: { completed: number }[]): number {
   return Math.max(...stats.map(s => s.completed), 1)
+}
+
+function formatDuration(minutes: number): string {
+  if (minutes <= 0) return '0m'
+  const h = Math.floor(minutes / 60)
+  const m = minutes % 60
+  return h > 0 ? `${h}h ${m}m` : `${m}m`
 }
 </script>
 
@@ -68,9 +77,13 @@ function maxCompleted(stats: { completed: number }[]): number {
           <span class="stat-value">{{ stats.totalReviews }}</span>
           <span class="stat-label">复盘记录</span>
         </div>
-        <div class="stat-card">
-          <span class="stat-value">{{ stats.totalTasks }}</span>
-          <span class="stat-label">总任务</span>
+        <div class="stat-card duration">
+          <span class="stat-value">{{ formatDuration(stats.totalPlannedDuration) }}</span>
+          <span class="stat-label">计划时长</span>
+        </div>
+        <div class="stat-card duration-actual">
+          <span class="stat-value">{{ formatDuration(stats.totalActualDuration) }}</span>
+          <span class="stat-label">实际耗时</span>
         </div>
       </div>
 
@@ -109,21 +122,40 @@ function maxCompleted(stats: { completed: number }[]): number {
 
 .stats-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr 1fr;
-  gap: 8px;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
 }
 
 .stat-card {
   background: var(--card);
   border-radius: var(--radius);
-  padding: 14px 8px;
+  padding: 16px 8px;
   text-align: center;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  transition: transform 0.2s, box-shadow 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--primary);
+  opacity: 0.3;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
 .stat-value {
   display: block;
-  font-size: 24px;
+  font-size: 22px;
   font-weight: 700;
   color: var(--primary);
 }
@@ -132,36 +164,52 @@ function maxCompleted(stats: { completed: number }[]): number {
   display: block;
   font-size: 11px;
   color: var(--text-secondary);
-  margin-top: 4px;
+  margin-top: 6px;
+  font-weight: 500;
 }
+
+.stat-card.success::before { background: var(--success); }
+.stat-card.warning::before { background: var(--warning); }
+.stat-card.danger::before { background: var(--danger); }
+.stat-card.info::before { background: var(--primary-light); }
+.stat-card.duration::before { background: #8b5cf6; }
+.stat-card.duration-actual::before { background: #06b6d4; }
 
 .stat-card.success .stat-value { color: var(--success); }
 .stat-card.warning .stat-value { color: var(--warning); }
 .stat-card.danger .stat-value { color: var(--danger); }
 .stat-card.info .stat-value { color: var(--primary-light); }
+.stat-card.duration .stat-value { color: #8b5cf6; }
+.stat-card.duration-actual .stat-value { color: #06b6d4; }
 
 .chart-section {
   background: var(--card);
   border-radius: var(--radius);
-  padding: 16px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  transition: box-shadow 0.2s;
+}
+
+.chart-section:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
 .chart-section h3 {
   font-size: 15px;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
+  font-weight: 600;
 }
 
 .bar-chart {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 
 .bar-row {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 
 .bar-label {
@@ -170,21 +218,22 @@ function maxCompleted(stats: { completed: number }[]): number {
   color: var(--text-secondary);
   text-align: right;
   flex-shrink: 0;
+  font-weight: 500;
 }
 
 .bar-track {
   flex: 1;
-  height: 20px;
+  height: 22px;
   background: var(--bg);
-  border-radius: 10px;
+  border-radius: 11px;
   overflow: hidden;
 }
 
 .bar-fill {
   height: 100%;
-  background: var(--primary);
-  border-radius: 10px;
-  transition: width 0.5s ease;
+  background: linear-gradient(90deg, var(--primary), var(--primary-light));
+  border-radius: 11px;
+  transition: width 0.6s ease;
   min-width: 4px;
 }
 
@@ -194,5 +243,12 @@ function maxCompleted(stats: { completed: number }[]): number {
   color: var(--text-secondary);
   text-align: right;
   flex-shrink: 0;
+  font-weight: 500;
+}
+
+@media (max-width: 400px) {
+  .stats-grid {
+    grid-template-columns: 1fr 1fr;
+  }
 }
 </style>

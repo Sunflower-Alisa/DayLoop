@@ -12,6 +12,8 @@ public class StatsResponse
     [JsonPropertyName("completionRate")] public int CompletionRate { get; set; }
     [JsonPropertyName("totalNotes")] public long TotalNotes { get; set; }
     [JsonPropertyName("totalReviews")] public long TotalReviews { get; set; }
+    [JsonPropertyName("totalPlannedDuration")] public long TotalPlannedDuration { get; set; }
+    [JsonPropertyName("totalActualDuration")] public long TotalActualDuration { get; set; }
     [JsonPropertyName("weeklyStats")] public List<WeeklyStat> WeeklyStats { get; set; } = [];
 }
 

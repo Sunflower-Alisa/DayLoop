@@ -78,7 +78,13 @@ function calcDuration(start: string, end: string): number {
   if (!start || !end) return 0
   const [sh, sm] = start.split(':').map(Number)
   const [eh, em] = end.split(':').map(Number)
-  return (eh * 60 + em) - (sh * 60 + sm)
+  const duration = (eh * 60 + em) - (sh * 60 + sm)
+  return duration < 0 ? duration + 24 * 60 : duration
+}
+
+function getPlannedDuration(task: Task): number {
+  const duration = calcDuration(task.start_time, task.end_time)
+  return duration > 0 ? duration : task.planned_duration
 }
 
 watch(selectedDate, () => {
@@ -262,11 +268,12 @@ function formatDuration(min: number): string {
           <span v-if="task.sync_enabled === false" class="badge-nosync" title="不同步到知识库">🚫</span>
         </div>
         <div class="task-meta">
-          <span>计划: {{ formatDuration(task.planned_duration) }}</span>
+          <span>计划: {{ formatDuration(getPlannedDuration(task)) }}</span>
           <span v-if="task.actual_duration">实际: {{ formatDuration(task.actual_duration) }}</span>
           <span v-if="task.note_id" class="linked-note" title="关联备忘录">📝 已关联</span>
           <span v-if="task.sync_enabled === false" class="nosync-tag">不同步</span>
         </div>
+        <div v-if="task.note" class="task-note">{{ task.note }}</div>
         <div v-if="task.achievement" class="task-achievement" v-html="renderContent(task.achievement.slice(0, 100) + (task.achievement.length > 100 ? '...' : ''))"></div>
         <div class="task-actions">
           <select :value="task.status" @change="updateStatus(task, ($event.target as HTMLSelectElement).value as any)">
@@ -294,6 +301,7 @@ function formatDuration(min: number): string {
           <span v-if="task.actual_duration">实际: {{ formatDuration(task.actual_duration) }}</span>
           <span v-if="task.sync_enabled === false" class="nosync-tag">不同步</span>
         </div>
+        <div v-if="task.note" class="task-note">{{ task.note }}</div>
         <div v-if="task.achievement" class="task-achievement" v-html="renderContent(task.achievement.slice(0, 100) + (task.achievement.length > 100 ? '...' : ''))"></div>
         <div class="task-actions">
           <select :value="task.status" @change="updateStatus(task, ($event.target as HTMLSelectElement).value as any)">
@@ -560,6 +568,17 @@ function formatDuration(min: number): string {
   margin-bottom: 8px;
   display: flex;
   gap: 12px;
+}
+
+.task-note {
+  margin: 0 0 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.55;
+  white-space: pre-line;
 }
 
 .task-actions {
@@ -844,4 +863,3 @@ function formatDuration(min: number): string {
   color: var(--text-secondary);
 }
 </style>
-

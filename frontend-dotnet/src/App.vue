@@ -269,8 +269,12 @@ onMounted(() => {
 :root {
   --primary: #4f46e5;
   --primary-light: #818cf8;
-  --bg: #f5f5f5;
+  --primary-dark: #3730a3;
+  --bg: #f0f2f5;
+  --bg-gradient: linear-gradient(135deg, #f0f2f5 0%, #e8ecf1 100%);
   --card: #ffffff;
+  --card-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --card-shadow-hover: 0 4px 12px rgba(0,0,0,0.1), 0 2px 4px rgba(0,0,0,0.06);
   --text: #1f2937;
   --text-secondary: #6b7280;
   --border: #e5e7eb;
@@ -278,14 +282,17 @@ onMounted(() => {
   --warning: #f59e0b;
   --danger: #ef4444;
   --radius: 12px;
+  --radius-sm: 8px;
   --top-bar-height: 52px;
+  --transition: 0.2s ease;
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background: var(--bg);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+  background: var(--bg-gradient);
   color: var(--text);
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 .app {
@@ -294,7 +301,7 @@ body {
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
-  background: var(--bg);
+  background: transparent;
 }
 
 @media (min-width: 540px) {
@@ -327,7 +334,7 @@ body {
 
 .top-bar {
   height: var(--top-bar-height);
-  background: var(--primary);
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
   color: white;
   padding: 0 12px;
   display: flex;
@@ -336,6 +343,7 @@ body {
   position: sticky;
   top: 0;
   z-index: 50;
+  box-shadow: 0 2px 8px rgba(79, 70, 229, 0.3);
 }
 
 .top-bar-left {

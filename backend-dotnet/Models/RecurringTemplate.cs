@@ -21,7 +21,7 @@ public class RecurringTemplate
 
 public class CreateRecurringRequest
 {
-    [JsonPropertyName("title")] public string Title { get; set; } = "";
+    [JsonPropertyName("title")] public string? Title { get; set; }
     [JsonPropertyName("start_time")] public string? StartTime { get; set; }
     [JsonPropertyName("end_time")] public string? EndTime { get; set; }
     [JsonPropertyName("planned_duration")] public int? PlannedDuration { get; set; }

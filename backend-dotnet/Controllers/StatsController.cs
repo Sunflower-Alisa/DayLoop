@@ -29,6 +29,9 @@ public class StatsController : ControllerBase
         var totalNotes = Scalar(conn, "SELECT COUNT(*) FROM notes WHERE user_id = " + userId);
         var totalReviews = Scalar(conn, "SELECT COUNT(*) FROM daily_reviews WHERE user_id = " + userId);
 
+        var totalPlannedDuration = Scalar(conn, "SELECT COALESCE(SUM(planned_duration), 0) FROM tasks WHERE user_id = " + userId);
+        var totalActualDuration = Scalar(conn, "SELECT COALESCE(SUM(actual_duration), 0) FROM tasks WHERE user_id = " + userId);
+
         var weeklyStats = new List<WeeklyStat>();
         using (var cmd = conn.CreateCommand())
         {
@@ -66,6 +69,8 @@ public class StatsController : ControllerBase
             CompletionRate = total > 0 ? (int)Math.Round((double)(long)completedTasks / total * 100) : 0,
             TotalNotes = (long)totalNotes,
             TotalReviews = (long)totalReviews,
+            TotalPlannedDuration = (long)totalPlannedDuration,
+            TotalActualDuration = (long)totalActualDuration,
             WeeklyStats = weeklyStats,
         });
     }

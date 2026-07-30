@@ -68,6 +68,20 @@ export interface Question {
   updated_at: string
 }
 
+export interface StatsResponse {
+  totalTasks: number
+  completedTasks: number
+  cancelledTasks: number
+  inProgressTasks: number
+  plannedTasks: number
+  completionRate: number
+  totalNotes: number
+  totalReviews: number
+  totalPlannedDuration: number
+  totalActualDuration: number
+  weeklyStats: { week: string; total: number; completed: number }[]
+}
+
 export interface Note {
   id: number
   title: string

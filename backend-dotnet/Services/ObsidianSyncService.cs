@@ -117,7 +117,7 @@ public static class ObsidianSyncService
             frontmatter.Add("---");
             frontmatter.Add("");
 
-            WriteFile(filePath, string.Join("\n", frontmatter) + (note.Content ?? ""));
+            WriteFile(filePath, string.Join("\n", frontmatter) + (note.Content ?? ""), vaultPath);
         }
 
         // Book group notes
@@ -149,7 +149,7 @@ public static class ObsidianSyncService
             frontmatter.Add("");
 
             var body = $"# 《{book}》读书笔记\n\n{string.Join("\n\n---\n\n", entries)}";
-            WriteFile(filePath, string.Join("\n", frontmatter) + body);
+            WriteFile(filePath, string.Join("\n", frontmatter) + body, vaultPath);
         }
 
         return total;
@@ -190,7 +190,7 @@ public static class ObsidianSyncService
                 frontmatter.Add("---");
                 frontmatter.Add("");
 
-                WriteFile(filePath, string.Join("\n", frontmatter) + (review.Content ?? ""));
+                WriteFile(filePath, string.Join("\n", frontmatter) + (review.Content ?? ""), vaultPath);
                 count++;
             }
         }
@@ -299,7 +299,7 @@ public static class ObsidianSyncService
                 if (task.PlannedDuration > 0)
                     body.Add($"**计划时长**: {task.PlannedDuration}分钟");
 
-                WriteFile(filePath, string.Join("\n", frontmatter) + string.Join("\n", body));
+                WriteFile(filePath, string.Join("\n", frontmatter) + string.Join("\n", body), vaultPath);
             }
             else
             {
@@ -342,7 +342,7 @@ public static class ObsidianSyncService
                 frontmatter.Add("---");
                 frontmatter.Add("");
 
-                WriteFile(filePath, string.Join("\n", frontmatter) + $"# {title}\n\n{string.Join("\n\n---\n\n", entries)}");
+                WriteFile(filePath, string.Join("\n", frontmatter) + $"# {title}\n\n{string.Join("\n\n---\n\n", entries)}", vaultPath);
             }
         }
 
@@ -382,7 +382,7 @@ public static class ObsidianSyncService
             frontmatter.Add("---");
             frontmatter.Add("");
 
-            WriteFile(filePath, string.Join("\n", frontmatter) + $"# 《{book}》读书笔记\n\n{string.Join("\n\n---\n\n", entries)}");
+            WriteFile(filePath, string.Join("\n", frontmatter) + $"# 《{book}》读书笔记\n\n{string.Join("\n\n---\n\n", entries)}", vaultPath);
         }
 
         return allTasks.Count;
@@ -403,13 +403,43 @@ public static class ObsidianSyncService
         return (notes, reviews, achievements);
     }
 
-    private static void WriteFile(string filePath, string content)
+    private static readonly string UploadsDir = Path.Combine(
+        Directory.GetCurrentDirectory(), "..", "backend", "data", "uploads"
+    );
+
+    private static string ProcessImageRefs(string content, string vaultImagesDir)
+    {
+        var regex = new Regex(@"!\[.*?\]\(/uploads/([^)]+)\)");
+        var result = content;
+        foreach (Match m in regex.Matches(content))
+        {
+            var filename = m.Groups[1].Value;
+            var srcPath = Path.Combine(UploadsDir, filename);
+            if (File.Exists(srcPath))
+            {
+                if (!Directory.Exists(vaultImagesDir))
+                    Directory.CreateDirectory(vaultImagesDir);
+                var destPath = Path.Combine(vaultImagesDir, filename);
+                try { File.Copy(srcPath, destPath, overwrite: true); }
+                catch (Exception ex) { Console.Error.WriteLine($"[ObsidianSync] Failed to copy image {filename}: {ex.Message}"); }
+            }
+            result = result.Replace(m.Value, $"![{filename}](../图片/{filename})");
+        }
+        return result;
+    }
+
+    private static void WriteFile(string filePath, string content, string? vaultPath = null)
     {
         try
         {
             var dir = Path.GetDirectoryName(filePath);
             if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
                 Directory.CreateDirectory(dir);
+            if (vaultPath != null)
+            {
+                var vaultImagesDir = Path.Combine(vaultPath, "DayLoop", "图片");
+                content = ProcessImageRefs(content, vaultImagesDir);
+            }
             File.WriteAllText(filePath, content);
         }
         catch (Exception ex)

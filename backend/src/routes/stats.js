@@ -19,6 +19,8 @@ router.get('/', (req, res) => {
   const dailyStats = db.prepare("SELECT date, COUNT(*) as total, SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completed FROM tasks WHERE user_id = ? GROUP BY date ORDER BY date DESC LIMIT 30").all(userId);
   const totalNotes = db.prepare('SELECT COUNT(*) as count FROM notes WHERE user_id = ?').get(userId);
   const totalReviews = db.prepare('SELECT COUNT(*) as count FROM daily_reviews WHERE user_id = ?').get(userId);
+  const totalPlannedDuration = db.prepare('SELECT COALESCE(SUM(planned_duration), 0) as count FROM tasks WHERE user_id = ?').get(userId);
+  const totalActualDuration = db.prepare('SELECT COALESCE(SUM(actual_duration), 0) as count FROM tasks WHERE user_id = ?').get(userId);
   const totalTemplates = db.prepare('SELECT COUNT(*) as count FROM recurring_templates WHERE user_id = ?').get(userId);
 
   const weeklyStats = db.prepare(`
@@ -42,6 +44,8 @@ router.get('/', (req, res) => {
     completionRate: totalTasks.count > 0 ? Math.round(completedTasks.count / totalTasks.count * 100) : 0,
     totalNotes: totalNotes.count,
     totalReviews: totalReviews.count,
+    totalPlannedDuration: totalPlannedDuration.count,
+    totalActualDuration: totalActualDuration.count,
     weeklyStats,
   });
 });

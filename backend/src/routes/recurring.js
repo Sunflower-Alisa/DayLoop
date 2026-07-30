@@ -20,7 +20,7 @@ router.post('/', (req, res) => {
     `INSERT INTO recurring_templates (title, start_time, end_time, planned_duration, category, priority, note, user_id, recurrence_type, recurrence_days, recurring_enabled, sync_enabled)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
   );
-  const result = stmt.run(title, start_time || '', end_time || '', planned_duration || 0, category || '', priority || 2, note || '', userId, recurrence_type || 'daily', recurrence_days || '', recurring_enabled ?? 1, sync_enabled ?? 1);
+  const result = stmt.run(title, start_time || '', end_time || '', planned_duration || 0, category || '', priority || 2, note || '', userId, recurrence_type || 'daily', recurrence_days || '', recurring_enabled == null ? 1 : recurring_enabled ? 1 : 0, sync_enabled == null ? 1 : sync_enabled ? 1 : 0);
   const template = db.prepare('SELECT * FROM recurring_templates WHERE id = ?').get(result.lastInsertRowid);
   res.status(201).json(template);
 });
@@ -43,7 +43,7 @@ router.put('/:id', (req, res) => {
       recurring_enabled = COALESCE(?, recurring_enabled),
       sync_enabled = COALESCE(?, sync_enabled)
     WHERE id = ? AND user_id = ?
-  `).run(title, start_time, end_time, planned_duration, category, priority, note, recurrence_type, recurrence_days, recurring_enabled, sync_enabled, id, userId);
+  `).run(title ?? null, start_time ?? null, end_time ?? null, planned_duration ?? null, category ?? null, priority ?? null, note ?? null, recurrence_type ?? null, recurrence_days ?? null, recurring_enabled ?? null, sync_enabled ?? null, id, userId);
   const template = db.prepare('SELECT * FROM recurring_templates WHERE id = ?').get(id);
   if (!template) return res.status(404).json({ error: 'Template not found' });
   res.json(template);
