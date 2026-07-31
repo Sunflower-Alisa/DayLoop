@@ -23,6 +23,21 @@ public class TasksController : ControllerBase
         return conn;
     }
 
+    [HttpGet("range")]
+    public IActionResult GetTasksRange([FromQuery] string? start, [FromQuery] string? end)
+    {
+        if (string.IsNullOrEmpty(start) || string.IsNullOrEmpty(end))
+            return BadRequest(new { error = "start and end are required" });
+        var userId = GetUserId();
+        using var conn = OpenDb();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "SELECT * FROM tasks WHERE user_id = @uid AND date >= @start AND date <= @end ORDER BY date, start_time";
+        cmd.Parameters.AddWithValue("@uid", userId);
+        cmd.Parameters.AddWithValue("@start", start);
+        cmd.Parameters.AddWithValue("@end", end);
+        return Ok(ReadTasksStatic(cmd));
+    }
+
     [HttpGet]
     public IActionResult GetTasks([FromQuery] string? date, [FromQuery] string? search)
     {
@@ -70,8 +85,8 @@ public class TasksController : ControllerBase
         using var conn = OpenDb();
         using var cmd = conn.CreateCommand();
         cmd.CommandText = """
-            INSERT INTO tasks (date, title, start_time, end_time, planned_duration, category, priority, note, is_recurring, is_planned, achievement, note_id, sync_enabled, user_id)
-            VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11, @p12, @p13)
+            INSERT INTO tasks (date, title, start_time, end_time, planned_duration, category, priority, note, is_recurring, is_planned, achievement, note_id, sync_enabled, planned_days, overall_status, user_id)
+            VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11, @p12, @p_days, 'pending', @p13)
         """;
         cmd.Parameters.AddWithValue("@p0", req.Date);
         cmd.Parameters.AddWithValue("@p1", req.Title);
@@ -86,6 +101,7 @@ public class TasksController : ControllerBase
         cmd.Parameters.AddWithValue("@p10", req.Achievement ?? "");
         cmd.Parameters.AddWithValue("@p11", (object?)req.NoteId ?? DBNull.Value);
         cmd.Parameters.AddWithValue("@p12", req.SyncEnabled ?? true ? 1 : 0);
+        cmd.Parameters.AddWithValue("@p_days", req.PlannedDays ?? 1);
         cmd.Parameters.AddWithValue("@p13", userId);
         cmd.ExecuteNonQuery();
 
@@ -111,8 +127,8 @@ public class TasksController : ControllerBase
             if (existing == null)
             {
                 cmd.CommandText = """
-                    INSERT INTO recurring_templates (title, start_time, end_time, planned_duration, category, priority, note, user_id)
-                    VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7)
+                    INSERT INTO recurring_templates (title, start_time, end_time, planned_duration, category, priority, note, user_id, planned_days, sync_enabled)
+                    VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p_days, @p_sync)
                 """;
                 cmd.Parameters.Clear();
                 cmd.Parameters.AddWithValue("@p0", req.Title);
@@ -123,6 +139,21 @@ public class TasksController : ControllerBase
                 cmd.Parameters.AddWithValue("@p5", req.Priority ?? 2);
                 cmd.Parameters.AddWithValue("@p6", req.Note ?? "");
                 cmd.Parameters.AddWithValue("@p7", userId);
+                cmd.Parameters.AddWithValue("@p_days", req.PlannedDays ?? 1);
+                cmd.Parameters.AddWithValue("@p_sync", req.SyncEnabled ?? true ? 1 : 0);
+                cmd.ExecuteNonQuery();
+            }
+            cmd.CommandText = "SELECT id FROM recurring_templates WHERE user_id = @uid AND title = @p0";
+            cmd.Parameters.Clear();
+            cmd.Parameters.AddWithValue("@uid", userId);
+            cmd.Parameters.AddWithValue("@p0", req.Title);
+            var tmplId = cmd.ExecuteScalar();
+            if (tmplId != null)
+            {
+                cmd.CommandText = "UPDATE tasks SET recurring_template_id = @tid WHERE id = @taskId";
+                cmd.Parameters.Clear();
+                cmd.Parameters.AddWithValue("@tid", (long)tmplId);
+                cmd.Parameters.AddWithValue("@taskId", taskId);
                 cmd.ExecuteNonQuery();
             }
         }
@@ -176,6 +207,8 @@ public class TasksController : ControllerBase
                 is_planned = COALESCE(@p12, is_planned),
                 achievement = COALESCE(@p13, achievement),
                 sync_enabled = COALESCE(@p_sync, sync_enabled),
+                planned_days = COALESCE(@p_days, planned_days),
+                overall_status = COALESCE(@p_overall, overall_status),
                 updated_at = datetime('now','localtime')
             WHERE id = @p14 AND user_id = @uid
         """;
@@ -195,6 +228,8 @@ public class TasksController : ControllerBase
         cmd.Parameters.AddWithValue("@p12", req.IsPlanned.HasValue ? (req.IsPlanned.Value ? 1 : 0) : DBNull.Value);
         cmd.Parameters.AddWithValue("@p13", (object?)req.Achievement ?? DBNull.Value);
         cmd.Parameters.AddWithValue("@p_sync", req.SyncEnabled.HasValue ? (req.SyncEnabled.Value ? 1 : 0) : DBNull.Value);
+        cmd.Parameters.AddWithValue("@p_days", (object?)req.PlannedDays ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("@p_overall", (object?)req.OverallStatus ?? DBNull.Value);
         cmd.Parameters.AddWithValue("@p14", id);
         cmd.Parameters.AddWithValue("@uid", userId);
         cmd.ExecuteNonQuery();
@@ -221,8 +256,8 @@ public class TasksController : ControllerBase
             if (existing == null)
             {
                 cmd.CommandText = """
-                    INSERT INTO recurring_templates (title, start_time, end_time, planned_duration, category, priority, note, user_id)
-                    VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7)
+                    INSERT INTO recurring_templates (title, start_time, end_time, planned_duration, category, priority, note, user_id, planned_days, sync_enabled)
+                    VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p_days, @p_sync)
                 """;
                 cmd.Parameters.Clear();
                 cmd.Parameters.AddWithValue("@p0", task.Title);
@@ -233,6 +268,21 @@ public class TasksController : ControllerBase
                 cmd.Parameters.AddWithValue("@p5", task.Priority);
                 cmd.Parameters.AddWithValue("@p6", task.Note);
                 cmd.Parameters.AddWithValue("@p7", userId);
+                cmd.Parameters.AddWithValue("@p_days", task.PlannedDays);
+                cmd.Parameters.AddWithValue("@p_sync", task.SyncEnabled ? 1 : 0);
+                cmd.ExecuteNonQuery();
+            }
+            cmd.CommandText = "SELECT id FROM recurring_templates WHERE user_id = @uid AND title = @p0";
+            cmd.Parameters.Clear();
+            cmd.Parameters.AddWithValue("@uid", userId);
+            cmd.Parameters.AddWithValue("@p0", task.Title);
+            var tmplId = cmd.ExecuteScalar();
+            if (tmplId != null)
+            {
+                cmd.CommandText = "UPDATE tasks SET recurring_template_id = @tid WHERE id = @taskId";
+                cmd.Parameters.Clear();
+                cmd.Parameters.AddWithValue("@tid", (long)tmplId);
+                cmd.Parameters.AddWithValue("@taskId", id);
                 cmd.ExecuteNonQuery();
             }
         }
@@ -290,8 +340,8 @@ public class TasksController : ControllerBase
         var targetDate = !string.IsNullOrEmpty(req?.Date) ? req.Date : DateTime.Now.ToString("yyyy-MM-dd");
 
         cmd.CommandText = """
-            INSERT INTO tasks (date, title, start_time, end_time, planned_duration, category, priority, note, is_recurring, is_planned, note_id, user_id)
-            VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11)
+            INSERT INTO tasks (date, title, start_time, end_time, planned_duration, category, priority, note, is_recurring, is_planned, note_id, planned_days, overall_status, user_id)
+            VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p_days, @p_overall, @p11)
         """;
         cmd.Parameters.Clear();
         cmd.Parameters.AddWithValue("@p0", targetDate);
@@ -305,6 +355,8 @@ public class TasksController : ControllerBase
         cmd.Parameters.AddWithValue("@p8", original.IsRecurring ? 1 : 0);
         cmd.Parameters.AddWithValue("@p9", original.IsPlanned ? 1 : 0);
         cmd.Parameters.AddWithValue("@p10", (object?)original.NoteId ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("@p_days", original.PlannedDays);
+        cmd.Parameters.AddWithValue("@p_overall", original.OverallStatus);
         cmd.Parameters.AddWithValue("@p11", userId);
         cmd.ExecuteNonQuery();
 
@@ -331,6 +383,22 @@ public class TasksController : ControllerBase
         cmd.Parameters.AddWithValue("@uid", userId);
         cmd.ExecuteNonQuery();
         return Ok(new { message = "Task deleted" });
+    }
+
+    [HttpDelete("by-name/{title}")]
+    public IActionResult DeleteTasksByName(string title)
+    {
+        var userId = GetUserId();
+        var today = DateTime.Now.ToString("yyyy-MM-dd");
+        using var conn = OpenDb();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "DELETE FROM tasks WHERE title = @p0 AND user_id = @uid AND date >= @p1 AND status != @p2";
+        cmd.Parameters.AddWithValue("@p0", title);
+        cmd.Parameters.AddWithValue("@uid", userId);
+        cmd.Parameters.AddWithValue("@p1", today);
+        cmd.Parameters.AddWithValue("@p2", "completed");
+        var count = cmd.ExecuteNonQuery();
+        return Ok(new { message = $"Deleted {count} task(s) with name \"{title}\"", count });
     }
 
     public static List<TaskItem> ReadTasksStatic(SqliteCommand cmd)
@@ -365,6 +433,8 @@ public class TasksController : ControllerBase
             Achievement = r.IsDBNull(r.GetOrdinal("achievement")) ? "" : r.GetString(r.GetOrdinal("achievement")),
             NoteId = r.IsDBNull(r.GetOrdinal("note_id")) ? null : r.GetInt64(r.GetOrdinal("note_id")),
             SyncEnabled = r.IsDBNull(r.GetOrdinal("sync_enabled")) || r.GetInt32(r.GetOrdinal("sync_enabled")) == 1,
+            PlannedDays = r.IsDBNull(r.GetOrdinal("planned_days")) ? 1 : r.GetInt32(r.GetOrdinal("planned_days")),
+            OverallStatus = r.IsDBNull(r.GetOrdinal("overall_status")) ? "pending" : r.GetString(r.GetOrdinal("overall_status")),
             Tags = r.IsDBNull(r.GetOrdinal("tags")) ? "" : r.GetString(r.GetOrdinal("tags")),
             CreatedAt = r.IsDBNull(r.GetOrdinal("created_at")) ? "" : r.GetString(r.GetOrdinal("created_at")),
             UpdatedAt = r.IsDBNull(r.GetOrdinal("updated_at")) ? "" : r.GetString(r.GetOrdinal("updated_at")),

@@ -18,6 +18,8 @@ export interface Task {
   achievement: string
   note_id: number | null
   sync_enabled: boolean
+  planned_days: number
+  overall_status: 'pending' | 'completed'
   created_at: string
   updated_at: string
 }
@@ -44,6 +46,7 @@ export interface RecurringTemplate {
   recurrence_days: string
   recurring_enabled: boolean
   sync_enabled: boolean
+  planned_days: number
 }
 
 export interface Question {
@@ -80,6 +83,26 @@ export interface StatsResponse {
   totalPlannedDuration: number
   totalActualDuration: number
   weeklyStats: { week: string; total: number; completed: number }[]
+}
+
+export interface Summary {
+  id: number
+  type: string
+  period_key: string
+  content: string
+  auto_summary: string
+  user_id: number
+  created_at: string
+  updated_at: string
+}
+
+export interface TaskSummary {
+  id: number
+  title: string
+  content: string
+  user_id: number
+  created_at: string
+  updated_at: string
 }
 
 export interface Note {

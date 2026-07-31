@@ -20,6 +20,7 @@ const form = ref({
   recurrence_days: '',
   recurring_enabled: true,
   sync_enabled: true,
+  planned_days: 1,
 })
 
 const weekDays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六']
@@ -39,7 +40,7 @@ async function loadTemplates() {
 
 function openCreate() {
   editingId.value = null
-  form.value = { title: '', start_time: '', end_time: '', planned_duration: 30, category: '', priority: 2, note: '', recurrence_type: 'daily', recurrence_days: '', recurring_enabled: true, sync_enabled: true }
+  form.value = { title: '', start_time: '', end_time: '', planned_duration: 30, category: '', priority: 2, note: '', recurrence_type: 'daily', recurrence_days: '', recurring_enabled: true, sync_enabled: true, planned_days: 1 }
   showForm.value = true
 }
 
@@ -57,6 +58,7 @@ function openEdit(t: RecurringTemplate) {
     recurrence_days: t.recurrence_days || '',
     recurring_enabled: t.recurring_enabled,
     sync_enabled: t.sync_enabled !== false,
+    planned_days: t.planned_days || 1,
   }
   showForm.value = true
 }
@@ -118,6 +120,7 @@ async function toggleEnabled(t: RecurringTemplate) {
             <span v-if="t.category">· {{ t.category }}</span>
             <span v-if="t.priority">· 优先级{{ t.priority }}</span>
             <span v-if="t.planned_duration">· {{ t.planned_duration }}分钟</span>
+            <span v-if="t.planned_days">· {{ t.planned_days }}天</span>
           </div>
           <div v-if="t.note" class="t-note">{{ t.note }}</div>
         </div>
@@ -143,6 +146,7 @@ async function toggleEnabled(t: RecurringTemplate) {
             <span v-if="t.category">· {{ t.category }}</span>
             <span v-if="t.priority">· 优先级{{ t.priority }}</span>
             <span v-if="t.planned_duration">· {{ t.planned_duration }}分钟</span>
+            <span v-if="t.planned_days">· {{ t.planned_days }}天</span>
           </div>
           <div v-if="t.note" class="t-note">{{ t.note }}</div>
         </div>
@@ -188,9 +192,15 @@ async function toggleEnabled(t: RecurringTemplate) {
             </select>
           </div>
         </div>
-        <div class="form-group">
-          <label>分类</label>
-          <input v-model="form.category" placeholder="如：工作、学习" />
+        <div class="form-row">
+          <div class="form-group">
+            <label>分类</label>
+            <input v-model="form.category" placeholder="如：工作、学习" />
+          </div>
+          <div class="form-group">
+            <label>计划完成天数</label>
+            <input type="number" v-model.number="form.planned_days" min="1" />
+          </div>
         </div>
         <div class="form-group">
           <label>重复方式</label>

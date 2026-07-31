@@ -1,6 +1,7 @@
 # DayLoop 功能文档
 
 > 版本: 2.2.0 | 技术栈: Vue 3 + TypeScript (前端), Express.js + SQLite / .NET Core + SQLite (后端), Vite (构建工具)
+> 最后更新: 2026-07-30
 >
 > **每次新增功能或修改后，请同步更新本文档。**
 
@@ -20,8 +21,9 @@
    - 5.5 [同步控制](#55-同步控制)
    - 5.6 [API](#56-api)
 6. [PWA 功能](#6-pwa-功能)
-7. [部署与启动](#7-部署与启动)
-8. [测试](#8-测试)
+7. [日历视图](#7-日历视图)
+8. [部署与启动](#8-部署与启动)
+9. [测试](#9-测试)
 
 ---
 
@@ -44,6 +46,8 @@
 | `/notes/categories` | note-categories | CategoryManage.vue | 管理备忘录分类 |
 | `/statistics` | statistics | Statistics.vue | 全局统计看板 |
 | `/templates` | templates | RecurringTemplates.vue | 循环任务模板管理（含同步开关） |
+| `/summary` | summary | Summary.vue | 周期性总结：按周/月/季度/年查看，自动生成摘要，手动撰写总结 |
+| `/calendar` | calendar | Calendar.vue | 日历视图：周/月/季度三种视图，优先级颜色标识，空闲程度计算 |
 
 ---
 
@@ -73,11 +77,13 @@
 | 方法 | 路径 | 参数 | 说明 |
 |------|------|------|------|
 | GET | `/api/tasks` | `?date=YYYY-MM-DD`, `?search=text` | 按日期/搜索词查询任务 |
-| POST | `/api/tasks` | - | 创建任务。必填: `date`, `title`。标记 `is_recurring=true` 时自动创建循环模板 |
+| GET | `/api/tasks/range` | `?start=YYYY-MM-DD&end=YYYY-MM-DD` | 查询日期范围内的所有任务（用于日历视图） |
+| POST | `/api/tasks` | - | 创建任务。必填: `date`, `title`。标记 `is_recurring=true` 时自动创建循环模板并关联 `recurring_template_id` |
 | PUT | `/api/tasks/:id` | - | 更新任务字段。支持 `sync_enabled`、`note_id` 关联备忘录、`is_recurring` 自动创建模板 |
 | GET | `/api/tasks/:id` | - | 获取单个任务 |
-| POST | `/api/tasks/:id/copy` | - | 复制任务到指定日期，保留所有字段 |
-| DELETE | `/api/tasks/:id` | - | 删除任务 |
+| POST | `/api/tasks/:id/copy` | - | 复制任务到指定日期，保留所有字段（包括 `planned_days`、`overall_status` 等） |
+| DELETE | `/api/tasks/:id` | - | 删除单个任务（已完成任务在前端禁用删除按钮） |
+| DELETE | `/api/tasks/by-name/:title` | - | 删除同名任务（仅删除 `date>=今天 AND status!='completed'` 的任务） |
 
 ### 2.4 每日复盘 `/api/reviews`
 
@@ -97,11 +103,30 @@
 | POST | `/api/recurring/generate` | 手动为指定 `date` 生成任务（从模板继承 `sync_enabled`） |
 
 > **自动生成机制**：
-> - **创建/更新任务**时若标记为循环任务（`is_recurring=true`），自动创建对应循环模板（如果同名模板不存在）
+> - **创建/更新任务**时若标记为循环任务（`is_recurring=true`），自动创建对应循环模板（如果同名模板不存在），并设置任务的 `recurring_template_id`
 > - 每天 **09:00** 通过 cron 自动为次日生成任务（仅生成 `recurring_enabled=true` 的模板，支持 daily/weekly 两种模式）
+> - 生成前检查模板 `planned_days`：`SELECT COUNT(DISTINCT date) FROM tasks WHERE recurring_template_id=?`，若已有天数 >= planned_days 则跳过不再生成
 > - 手动调用 `POST /api/recurring/generate` 可为任意日期生成
 
-### 2.6 成果 `/api/achievements`
+### 2.6 周期性总结 `/api/summaries`
+
+| 方法 | 路径 | 参数 | 说明 |
+|------|------|------|------|
+| GET | `/api/summaries` | `?type=&period=` | 查询某期总结（type: weekly/monthly/quarterly/yearly, period: 如 2026-W30/2026-07/2026-Q2/2026） |
+| PUT | `/api/summaries/:type/:period` | - | 创建或更新指定周期的总结（首次自动生成 AI 摘要） |
+| POST | `/api/summaries/generate` | - | 重新生成 AI 摘要 |
+| GET | `/api/summaries/list` | `?type=` | 列出某类型的所有已有期次 |
+
+> **定时生成**（每晚 22:00）：周日生成上周周报、月末生成月度、季度末生成季度、年底生成年度。
+
+### 2.7 任务总结 `/api/task-summaries`
+
+| 方法 | 路径 | 参数 | 说明 |
+|------|------|------|------|
+| GET | `/api/task-summaries` | `?title=` | 查询某任务标题的跨天总结 |
+| PUT | `/api/task-summaries/:title` | - | 创建或更新某任务标题的跨天总结 |
+
+### 2.8 成果 `/api/achievements`
 
 | 方法 | 路径 | 参数 | 说明 |
 |------|------|------|------|
@@ -109,7 +134,7 @@
 | GET | `/api/achievements/categories` | - | 列出有成果记录的分类列表 |
 | GET | `/api/achievements/:id` | - | 获取单个成果详情 |
 
-### 2.7 备忘录 `/api/notes`
+### 2.9 备忘录 `/api/notes`
 
 | 方法 | 路径 | 参数 | 说明 |
 |------|------|------|------|
@@ -122,25 +147,25 @@
 | PUT | `/api/notes/:id` | - | 更新备忘录 |
 | DELETE | `/api/notes/:id` | - | 删除备忘录，同时解除关联任务的 note_id |
 
-### 2.8 图片上传 `/api/upload`
+### 2.10 图片上传 `/api/upload`
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
 | POST | `/api/upload/image` | 接收 base64 dataUrl，保存到 `backend/data/uploads/`，返回公网 URL |
 
-### 2.9 数据导出 `/api/export`
+### 2.11 数据导出 `/api/export`
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
 | GET | `/api/export/json` | 导出全部数据为 JSON 下载（含版本号、时间戳、任务、备忘录、复盘、循环模板） |
 
-### 2.10 统计 `/api/stats`
+### 2.12 统计 `/api/stats`
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
 | GET | `/api/stats` | 返回聚合统计：任务总数/已完成/进行中/已取消/计划内、完成率、备忘录数、复盘数、近12周周统计 |
 
-### 2.11 Obsidian 设置 `/api/settings`
+### 2.13 Obsidian 设置 `/api/settings`
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
@@ -148,7 +173,7 @@
 | PUT | `/api/settings` | 更新设置。Body: `{"key": "obsidian_vault_path", "value": "D:/path"}` |
 | POST | `/api/settings/sync-all` | 全量同步：清空并重新生成所有 Obsidian 笔记 |
 
-### 2.12 静态文件
+### 2.14 静态文件
 
 | 路径 | 说明 |
 |------|------|
@@ -195,6 +220,8 @@
 | tags | TEXT | `''` | | 逗号分隔标签 |
 | user_id | INTEGER | 0 | | 所属用户 ID |
 | sync_enabled | INTEGER | 1 | | 成果是否同步到 Obsidian 知识库 |
+| planned_days | INTEGER | 1 | | 计划完成天数（跨天任务） |
+| overall_status | TEXT | `'pending'` | | 整体完成状态: pending/completed |
 | created_at | TEXT | `datetime('now','localtime')` | | 创建时间 |
 | updated_at | TEXT | `datetime('now','localtime')` | | 更新时间 |
 
@@ -226,6 +253,7 @@
 | recurrence_days | TEXT | `''` | | 每周重复日（逗号分隔 0=周日） |
 | recurring_enabled | INTEGER | 1 | | 是否启用自动生成 |
 | sync_enabled | INTEGER | 1 | | 生成的任务默认是否同步到知识库 |
+| planned_days | INTEGER | 1 | | 计划完成天数，达到后停止生成 |
 | created_at | TEXT | `datetime('now','localtime')` | | 创建时间 |
 
 ### 3.5 `notes` 备忘录表
@@ -267,6 +295,30 @@
 
 > 备忘录与任务是多对多关系，通过此中间表关联。前端 Note 类型中的 `linked_tasks` 数组即来自此表。
 
+### 3.9 `summaries` 周期性总结表
+
+| 字段 | 类型 | 默认值 | 约束 | 说明 |
+|------|------|--------|------|------|
+| id | INTEGER | AUTOINCREMENT | PRIMARY KEY | 自增 ID |
+| type | TEXT | NOT NULL | | 类型: weekly/monthly/quarterly/yearly |
+| period_key | TEXT | NOT NULL | UNIQUE | 期键: 2026-W30/2026-07/2026-Q2/2026 |
+| content | TEXT | `''` | | 用户手动撰写的总结内容 |
+| auto_summary | TEXT | `''` | | 系统自动生成的摘要 |
+| user_id | INTEGER | 0 | | 所属用户 ID |
+| created_at | TEXT | `datetime('now','localtime')` | | 创建时间 |
+| updated_at | TEXT | `datetime('now','localtime')` | | 更新时间 |
+
+### 3.10 `task_summaries` 任务跨天总结表
+
+| 字段 | 类型 | 默认值 | 约束 | 说明 |
+|------|------|--------|------|------|
+| id | INTEGER | AUTOINCREMENT | PRIMARY KEY | 自增 ID |
+| title | TEXT | NOT NULL | | 任务标题 |
+| content | TEXT | `''` | | 总结内容 |
+| user_id | INTEGER | 0 | | 所属用户 ID |
+| created_at | TEXT | `datetime('now','localtime')` | | 创建时间 |
+| updated_at | TEXT | `datetime('now','localtime')` | | 更新时间 |
+
 ---
 
 ## 4. 前端类型定义
@@ -294,6 +346,8 @@ interface Task {
   note_id: number | null
   sync_enabled: boolean
   tags: string
+  planned_days: number
+  overall_status: 'pending' | 'completed'
   created_at: string
   updated_at: string
 }
@@ -315,6 +369,31 @@ interface RecurringTemplate {
   created_at: string
   recurrence_type: string; recurrence_days: string; recurring_enabled: boolean
   sync_enabled: boolean
+  planned_days: number
+}
+```
+
+### `TaskSummary`
+```typescript
+interface TaskSummary {
+  id: number
+  title: string
+  content: string
+  created_at: string
+  updated_at: string
+}
+```
+
+### `Summary`
+```typescript
+interface Summary {
+  id: number
+  type: 'weekly' | 'monthly' | 'quarterly' | 'yearly'
+  period_key: string
+  content: string
+  auto_summary: string
+  created_at: string
+  updated_at: string
 }
 ```
 
@@ -428,9 +507,37 @@ DayLoop 支持将备忘录、每日复盘、任务成果实时同步到本地 Ob
 
 ---
 
-## 7. 部署与启动
+## 7. 日历视图
 
-### 7.1 `start.cmd` 交互菜单
+### 7.1 页面
+`/calendar` — `Calendar.vue`，支持三种视图：周视图、月视图、季度视图。
+
+### 7.2 空闲时间计算（`freeTime()`，客户端纯计算）
+```
+以 [360, 1080] = 6:00~18:00 为 12h 活动窗口
+过滤有起止时间的任务 → 转为分钟数 → 按开始时间排序
+遍历合并重叠区间，累加 occupied 分钟数
+freeMin = 720 - occupied
+分级：
+  ≥480min → 充裕 🟢
+  240~480 → 较多 🔵
+  120~240 → 适中 🟡
+  1~120   → 较紧 🟠
+  0       → 已满 🔴
+```
+
+### 7.3 显示特性
+- **周视图**：7 列格子，显示日期、空闲程度徽标、任务卡片（优先级颜色 + 状态图标）
+- **月/季度视图**：格子中显示最多 3 个任务点 + "+N" 溢出提示
+- **优先级颜色**：1=红 / 2=黄 / 3=蓝
+- **导航**：前后切换 + "今天"按钮
+- **API**: `GET /api/tasks/range?start=&end=`
+
+---
+
+## 8. 部署与启动
+
+### 8.1 `start.cmd` 交互菜单
 
 | 选项 | 功能 |
 |------|------|
@@ -442,38 +549,38 @@ DayLoop 支持将备忘录、每日复盘、任务成果实时同步到本地 Ob
 | 6 | 构建 iOS 项目（仅 macOS） |
 | 7 | 退出 |
 
-### 7.2 `scripts/deploy.cmd` 部署脚本
+### 8.2 `scripts/deploy.cmd` 部署脚本
 1. 构建前端生产版本
 2. 生成 PWA 图标
 3. 在新窗口中启动后端
 4. 打印访问说明（本地、ngrok、Cloudflare Tunnel、端口转发）
 
-### 7.3 `scripts/dev-watch.cmd` 开发模式
+### 8.3 `scripts/dev-watch.cmd` 开发模式
 - 后端 `node --watch` 自动重启
 - 每 3 秒检测前端文件变化，自动重新构建
 
-### 7.4 双后端架构
+### 8.4 双后端架构
 - **Node.js 后端**: `backend/`（Express.js），默认端口 3001，提供 `frontend/` 构建产物
 - **.NET 后端**: `backend-dotnet/`（ASP.NET Core），默认端口 5000，提供 `frontend-dotnet/` 构建产物
 - 两个后端共享同一 SQLite 数据库，功能完全一致
 
-### 7.5 Docker 部署
+### 8.5 Docker 部署
 - `Dockerfile`: 基于 node:18-alpine，构建前端 + 后端生产镜像
 - `docker-compose.yml`: 单服务，端口 3001，持久化 volume `dayloop-data`
 - `docker/android-builder/Dockerfile`: Docker 内构建 Android APK
 
-### 7.6 Android APK 构建
+### 8.6 Android APK 构建
 - `scripts/build-apk.cmd`: 本地构建（需 Android SDK）
 - `scripts/docker-build-apk.cmd`: Docker 内构建（无需本地 SDK）
 - 使用 Capacitor 打包，输出 `app-debug.apk`
 
-### 7.7 iOS 构建
+### 8.7 iOS 构建
 - `scripts/build-ipa.cmd`: 仅 macOS + Xcode 可用
 - 使用 Capacitor 生成 iOS 项目，在 Xcode 中手动构建
 
 ---
 
-## 8. 测试
+## 9. 测试
 
 - 文件: `tests/backend.test.js`
 - 运行: `node tests/backend.test.js`

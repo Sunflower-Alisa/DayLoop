@@ -149,7 +149,10 @@ public static class Database
         AddColumnIfMissing(conn, "notes", "user_id", "INTEGER DEFAULT 0");
         AddColumnIfMissing(conn, "note_categories", "user_id", "INTEGER DEFAULT 0");
         AddColumnIfMissing(conn, "tasks", "sync_enabled", "INTEGER DEFAULT 1");
-AddColumnIfMissing(conn, "recurring_templates", "sync_enabled", "INTEGER DEFAULT 1");
+        AddColumnIfMissing(conn, "recurring_templates", "sync_enabled", "INTEGER DEFAULT 1");
+        AddColumnIfMissing(conn, "tasks", "planned_days", "INTEGER DEFAULT 1");
+        AddColumnIfMissing(conn, "recurring_templates", "planned_days", "INTEGER DEFAULT 1");
+        AddColumnIfMissing(conn, "tasks", "overall_status", "TEXT DEFAULT 'pending'");
 
         // Junction table for note <-> task many-to-many
         using var cmd2 = conn.CreateCommand();
@@ -170,6 +173,37 @@ AddColumnIfMissing(conn, "recurring_templates", "sync_enabled", "INTEGER DEFAULT
             )
         """;
         cmd3.ExecuteNonQuery();
+
+        // summaries table
+        using var cmd4 = conn.CreateCommand();
+        cmd4.CommandText = """
+            CREATE TABLE IF NOT EXISTS summaries (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                type TEXT NOT NULL CHECK(type IN ('weekly','monthly','quarterly','yearly')),
+                period_key TEXT NOT NULL,
+                content TEXT DEFAULT '',
+                auto_summary TEXT DEFAULT '',
+                user_id INTEGER DEFAULT 0,
+                created_at TEXT DEFAULT (datetime('now','localtime')),
+                updated_at TEXT DEFAULT (datetime('now','localtime'))
+            )
+        """;
+        cmd4.ExecuteNonQuery();
+
+        using var cmd5 = conn.CreateCommand();
+        cmd5.CommandText = """
+            CREATE TABLE IF NOT EXISTS task_summaries (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                title TEXT NOT NULL,
+                content TEXT DEFAULT '',
+                user_id INTEGER DEFAULT 0,
+                created_at TEXT DEFAULT (datetime('now','localtime')),
+                updated_at TEXT DEFAULT (datetime('now','localtime'))
+            )
+        """;
+        cmd5.ExecuteNonQuery();
+
+        AddColumnIfMissing(conn, "daily_reviews", "tags", "TEXT DEFAULT ''");
     }
 
     private static void AddColumnIfMissing(SqliteConnection conn, string table, string column, string definition)

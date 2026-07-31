@@ -36,8 +36,8 @@ public class RecurringController : ControllerBase
         using var conn = Database.CreateConnection();
         using var cmd = conn.CreateCommand();
         cmd.CommandText = """
-            INSERT INTO recurring_templates (title, start_time, end_time, planned_duration, category, priority, note, user_id, recurrence_type, recurrence_days, recurring_enabled, sync_enabled)
-            VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11)
+            INSERT INTO recurring_templates (title, start_time, end_time, planned_duration, category, priority, note, user_id, recurrence_type, recurrence_days, recurring_enabled, sync_enabled, planned_days)
+            VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11, @p_days)
         """;
         cmd.Parameters.AddWithValue("@p0", req.Title);
         cmd.Parameters.AddWithValue("@p1", req.StartTime ?? "");
@@ -51,6 +51,7 @@ public class RecurringController : ControllerBase
         cmd.Parameters.AddWithValue("@p9", req.RecurrenceDays ?? "");
         cmd.Parameters.AddWithValue("@p10", req.RecurringEnabled ?? true);
         cmd.Parameters.AddWithValue("@p11", req.SyncEnabled ?? true);
+        cmd.Parameters.AddWithValue("@p_days", req.PlannedDays ?? 1);
         cmd.ExecuteNonQuery();
 
         cmd.CommandText = "SELECT last_insert_rowid()";
@@ -82,7 +83,8 @@ public class RecurringController : ControllerBase
                 recurrence_type = COALESCE(@p8, recurrence_type),
                 recurrence_days = COALESCE(@p9, recurrence_days),
                 recurring_enabled = COALESCE(@p10, recurring_enabled),
-                sync_enabled = COALESCE(@p11, sync_enabled)
+                sync_enabled = COALESCE(@p11, sync_enabled),
+                planned_days = COALESCE(@p_days, planned_days)
             WHERE id = @p7 AND user_id = @uid
         """;
         cmd.Parameters.AddWithValue("@p0", (object?)req.Title ?? DBNull.Value);
@@ -96,6 +98,7 @@ public class RecurringController : ControllerBase
         cmd.Parameters.AddWithValue("@p9", (object?)req.RecurrenceDays ?? DBNull.Value);
         cmd.Parameters.AddWithValue("@p10", (object?)req.RecurringEnabled ?? DBNull.Value);
         cmd.Parameters.AddWithValue("@p11", req.SyncEnabled.HasValue ? (req.SyncEnabled.Value ? 1 : 0) : DBNull.Value);
+        cmd.Parameters.AddWithValue("@p_days", (object?)req.PlannedDays ?? DBNull.Value);
         cmd.Parameters.AddWithValue("@p7", id);
         cmd.Parameters.AddWithValue("@uid", userId);
         cmd.ExecuteNonQuery();
@@ -155,31 +158,38 @@ public class RecurringController : ControllerBase
             cmd.Parameters.AddWithValue("@p0", req.Date);
             cmd.Parameters.AddWithValue("@p1", t.Id);
             var existing = cmd.ExecuteScalar();
+            if (existing != null) continue;
 
-            if (existing == null)
-            {
-                cmd.CommandText = """
-                    INSERT INTO tasks (date, title, start_time, end_time, planned_duration, category, priority, note, is_recurring, recurring_template_id, user_id, sync_enabled)
-                    VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, 1, @p8, @uid, @p_sync)
-                """;
-                cmd.Parameters.Clear();
-                cmd.Parameters.AddWithValue("@p0", req.Date);
-                cmd.Parameters.AddWithValue("@p1", t.Title);
-                cmd.Parameters.AddWithValue("@p2", t.StartTime);
-                cmd.Parameters.AddWithValue("@p3", t.EndTime);
-                cmd.Parameters.AddWithValue("@p4", t.PlannedDuration);
-                cmd.Parameters.AddWithValue("@p5", t.Category);
-                cmd.Parameters.AddWithValue("@p6", t.Priority);
-                cmd.Parameters.AddWithValue("@p7", t.Note);
-                cmd.Parameters.AddWithValue("@p8", t.Id);
-                cmd.Parameters.AddWithValue("@p_sync", t.SyncEnabled ? 1 : 0);
-                cmd.Parameters.AddWithValue("@uid", userId);
-                cmd.ExecuteNonQuery();
+            var tPlannedDays = t.PlannedDays;
+            cmd.CommandText = "SELECT COUNT(DISTINCT date) FROM tasks WHERE user_id = @uid AND recurring_template_id = @tid";
+            cmd.Parameters.Clear();
+            cmd.Parameters.AddWithValue("@uid", userId);
+            cmd.Parameters.AddWithValue("@tid", t.Id);
+            var taskCount = (long)cmd.ExecuteScalar()!;
+            if (taskCount >= tPlannedDays) continue;
 
-                cmd.CommandText = "SELECT last_insert_rowid()";
-                cmd.Parameters.Clear();
-                createdIds.Add((long)cmd.ExecuteScalar()!);
-            }
+            cmd.CommandText = """
+                INSERT INTO tasks (date, title, start_time, end_time, planned_duration, category, priority, note, is_recurring, recurring_template_id, user_id, sync_enabled, planned_days, overall_status)
+                VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, 1, @p8, @uid, @p_sync, @p_days, 'pending')
+            """;
+            cmd.Parameters.Clear();
+            cmd.Parameters.AddWithValue("@p0", req.Date);
+            cmd.Parameters.AddWithValue("@p1", t.Title);
+            cmd.Parameters.AddWithValue("@p2", t.StartTime);
+            cmd.Parameters.AddWithValue("@p3", t.EndTime);
+            cmd.Parameters.AddWithValue("@p4", t.PlannedDuration);
+            cmd.Parameters.AddWithValue("@p5", t.Category);
+            cmd.Parameters.AddWithValue("@p6", t.Priority);
+            cmd.Parameters.AddWithValue("@p7", t.Note);
+            cmd.Parameters.AddWithValue("@p8", t.Id);
+            cmd.Parameters.AddWithValue("@p_sync", t.SyncEnabled ? 1 : 0);
+            cmd.Parameters.AddWithValue("@p_days", tPlannedDays);
+            cmd.Parameters.AddWithValue("@uid", userId);
+            cmd.ExecuteNonQuery();
+
+            cmd.CommandText = "SELECT last_insert_rowid()";
+            cmd.Parameters.Clear();
+            createdIds.Add((long)cmd.ExecuteScalar()!);
         }
 
         if (createdIds.Count == 0)
@@ -220,6 +230,7 @@ public class RecurringController : ControllerBase
             RecurrenceDays = r.IsDBNull(r.GetOrdinal("recurrence_days")) ? "" : r.GetString(r.GetOrdinal("recurrence_days")),
             RecurringEnabled = r.IsDBNull(r.GetOrdinal("recurring_enabled")) || r.GetInt32(r.GetOrdinal("recurring_enabled")) == 1,
             SyncEnabled = r.IsDBNull(r.GetOrdinal("sync_enabled")) || r.GetInt32(r.GetOrdinal("sync_enabled")) == 1,
+            PlannedDays = r.IsDBNull(r.GetOrdinal("planned_days")) ? 1 : r.GetInt32(r.GetOrdinal("planned_days")),
         };
     }
 }

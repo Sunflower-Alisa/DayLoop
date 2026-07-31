@@ -15,6 +15,8 @@ const exportRouter = require('./routes/export');
 const statsRouter = require('./routes/stats');
 const settingsRouter = require('./routes/settings');
 const questionsRouter = require('./routes/questions');
+const summariesRouter = require('./routes/summaries');
+const taskSummariesRouter = require('./routes/task-summaries');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -58,6 +60,8 @@ app.use('/api/export', exportRouter);
 app.use('/api/stats', statsRouter);
 app.use('/api/settings', settingsRouter);
 app.use('/api/questions', questionsRouter);
+app.use('/api/summaries', summariesRouter);
+app.use('/api/task-summaries', taskSummariesRouter);
 
 app.use('/uploads', express.static(path.join(__dirname, '..', 'data', 'uploads')));
 app.use(express.static(path.join(__dirname, '..', '..', 'frontend', 'dist')));
@@ -85,13 +89,15 @@ const generateNextDayTasks = () => {
         if (!days.includes(String(tomorrowDow))) continue;
       }
       const existing = db.prepare('SELECT id FROM tasks WHERE date = ? AND recurring_template_id = ?').get(dateStr, t.id);
-      if (!existing) {
-        db.prepare(
-          `INSERT INTO tasks (date, title, start_time, end_time, planned_duration, category, priority, note, is_recurring, recurring_template_id, sync_enabled)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?)`
-        ).run(dateStr, t.title, t.start_time, t.end_time, t.planned_duration, t.category, t.priority, t.note, t.id, t.sync_enabled !== false ? 1 : 0);
-        count++;
-      }
+      if (existing) continue;
+      const tPlannedDays = t.planned_days || 1;
+      const taskCount = db.prepare('SELECT COUNT(DISTINCT date) as cnt FROM tasks WHERE recurring_template_id = ?').get(t.id);
+      if (taskCount && taskCount.cnt >= tPlannedDays) continue;
+      db.prepare(
+        `INSERT INTO tasks (date, title, start_time, end_time, planned_duration, category, priority, note, is_recurring, recurring_template_id, sync_enabled, planned_days, overall_status)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?, 'pending')`
+      ).run(dateStr, t.title, t.start_time, t.end_time, t.planned_duration, t.category, t.priority, t.note, t.id, t.sync_enabled !== false ? 1 : 0, tPlannedDays);
+      count++;
     }
     if (count > 0) console.log(`[Scheduler] Generated ${count} recurring tasks for ${dateStr}`);
   } catch (e) {
@@ -101,6 +107,66 @@ const generateNextDayTasks = () => {
 
 cron.schedule('0 9 * * *', generateNextDayTasks);
 console.log('[Scheduler] Registered: auto-generate recurring tasks at 09:00');
+
+// Auto-generate summaries at 22:00 on last day of each period
+const autoGenerateSummaries = () => {
+  const today = new Date();
+  const todayStr = today.toISOString().slice(0, 10);
+  const year = today.getFullYear();
+  const month = today.getMonth() + 1;
+  const day = today.getDate();
+  const dow = today.getDay(); // 0=Sun
+  const lastDayOfMonth = new Date(year, month, 0).getDate();
+  const quarter = Math.ceil(month / 3);
+  const lastDayOfQuarter = new Date(year, quarter * 3, 0).getDate();
+  const lastMonthOfQuarter = quarter * 3;
+
+  const periods = [];
+
+  // Weekly: Sunday (dow === 0) → generate previous week summary
+  if (dow === 0) {
+    const jan1 = new Date(year, 0, 1);
+    const days = Math.floor((today.getTime() - jan1.getTime()) / 86400000);
+    const weekNum = Math.ceil((days + jan1.getDay() + 1) / 7);
+    periods.push({ type: 'weekly', period: `${year}-W${String(weekNum).padStart(2, '0')}` });
+  }
+
+  // Monthly: last day of month
+  if (day === lastDayOfMonth) {
+    periods.push({ type: 'monthly', period: `${year}-${String(month).padStart(2, '0')}` });
+  }
+
+  // Quarterly: last day of quarter
+  if (day === lastDayOfQuarter && month === lastMonthOfQuarter) {
+    periods.push({ type: 'quarterly', period: `${year}-Q${quarter}` });
+  }
+
+  // Yearly: Dec 31
+  if (month === 12 && day === 31) {
+    periods.push({ type: 'yearly', period: `${year}` });
+  }
+
+  if (periods.length === 0) return;
+
+  const users = db.prepare('SELECT id FROM users').all();
+  for (const user of users) {
+    for (const p of periods) {
+      try {
+        const existing = db.prepare('SELECT id FROM summaries WHERE user_id = ? AND type = ? AND period_key = ?').get(user.id, p.type, p.period);
+        if (existing) continue;
+
+                const autoSummary = summariesRouter.generateAutoSummary(user.id, p.type, p.period);
+        db.prepare('INSERT INTO summaries (type, period_key, auto_summary, user_id) VALUES (?, ?, ?, ?)').run(p.type, p.period, autoSummary, user.id);
+        console.log(`[SummaryScheduler] Auto-generated ${p.type} summary for user ${user.id} period ${p.period}`);
+      } catch (e) {
+        console.error(`[SummaryScheduler] Error for user ${user.id} ${p.type} ${p.period}:`, e.message);
+      }
+    }
+  }
+};
+
+cron.schedule('0 22 * * *', autoGenerateSummaries);
+console.log('[SummaryScheduler] Registered: auto-generate summaries at 22:00');
 
 const lanIP = getLANIP();
 app.listen(PORT, async () => {

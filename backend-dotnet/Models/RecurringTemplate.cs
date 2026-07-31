@@ -17,6 +17,7 @@ public class RecurringTemplate
     [JsonPropertyName("recurrence_days")] public string RecurrenceDays { get; set; } = "";
     [JsonPropertyName("recurring_enabled")] public bool RecurringEnabled { get; set; } = true;
     [JsonPropertyName("sync_enabled")] public bool SyncEnabled { get; set; } = true;
+    [JsonPropertyName("planned_days")] public int PlannedDays { get; set; } = 1;
 }
 
 public class CreateRecurringRequest
@@ -32,6 +33,7 @@ public class CreateRecurringRequest
     [JsonPropertyName("recurrence_days")] public string? RecurrenceDays { get; set; }
     [JsonPropertyName("recurring_enabled")] public bool? RecurringEnabled { get; set; }
     [JsonPropertyName("sync_enabled")] public bool? SyncEnabled { get; set; }
+    [JsonPropertyName("planned_days")] public int? PlannedDays { get; set; }
 }
 
 public class GenerateRecurringRequest

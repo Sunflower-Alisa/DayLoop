@@ -102,7 +102,10 @@ addColumnIfMissing('recurring_templates', 'recurring_enabled', 'INTEGER DEFAULT 
 addColumnIfMissing('notes', 'user_id', 'INTEGER DEFAULT 0');
 addColumnIfMissing('note_categories', 'user_id', 'INTEGER DEFAULT 0');
 addColumnIfMissing('tasks', 'sync_enabled', 'INTEGER DEFAULT 1');
+addColumnIfMissing('tasks', 'planned_days', 'INTEGER DEFAULT 1');
 addColumnIfMissing('recurring_templates', 'sync_enabled', 'INTEGER DEFAULT 1');
+addColumnIfMissing('recurring_templates', 'planned_days', 'INTEGER DEFAULT 1');
+addColumnIfMissing('tasks', 'overall_status', "TEXT DEFAULT 'pending'");
 
 db.exec(`
   CREATE TABLE IF NOT EXISTS questions (
@@ -156,5 +159,31 @@ db.exec(`
     value TEXT DEFAULT ''
   )
 `);
+
+db.exec(`
+  CREATE TABLE IF NOT EXISTS summaries (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    type TEXT NOT NULL CHECK(type IN ('weekly','monthly','quarterly','yearly')),
+    period_key TEXT NOT NULL,
+    content TEXT DEFAULT '',
+    auto_summary TEXT DEFAULT '',
+    user_id INTEGER DEFAULT 0,
+    created_at TEXT DEFAULT (datetime('now','localtime')),
+    updated_at TEXT DEFAULT (datetime('now','localtime'))
+  )
+`);
+
+db.exec(`
+  CREATE TABLE IF NOT EXISTS task_summaries (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    content TEXT DEFAULT '',
+    user_id INTEGER DEFAULT 0,
+    created_at TEXT DEFAULT (datetime('now','localtime')),
+    updated_at TEXT DEFAULT (datetime('now','localtime'))
+  )
+`);
+
+addColumnIfMissing('daily_reviews', 'tags', 'TEXT DEFAULT \'\'');
 
 module.exports = db;

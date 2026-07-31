@@ -40,9 +40,12 @@ const completeForm = ref({
   actual_duration: 0,
   achievement: '',
   sync_enabled: true,
+  overall_completed: false,
 })
 
 const uploading = ref(false)
+const summaryForm = ref({ content: '' })
+const loadingSummary = ref(false)
 
 function renderContent(text: string): string {
   return text.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" style="max-width:100%;border-radius:8px;margin:8px 0">')
@@ -136,7 +139,7 @@ async function loadTaskCategories() {
 
 function openNew(isPlanned: boolean) {
   editingTask.value = null
-  form.value = { title: '', date: selectedDate.value, start_time: '', end_time: '', planned_duration: 30, category: '', priority: 2, note: '', is_recurring: false, is_planned: isPlanned, note_id: null, sync_enabled: true }
+  form.value = { title: '', date: selectedDate.value, start_time: '', end_time: '', planned_duration: 30, category: '', priority: 2, note: '', is_recurring: false, is_planned: isPlanned, note_id: null, sync_enabled: true, planned_days: 1 }
   selectedNoteId.value = null
   showForm.value = true
 }
@@ -156,6 +159,7 @@ function openEdit(task: Task) {
     is_planned: task.is_planned,
     note_id: task.note_id,
     sync_enabled: task.sync_enabled !== false,
+    planned_days: task.planned_days || 1,
   }
   selectedNoteId.value = task.note_id
   showForm.value = true
@@ -182,7 +186,17 @@ async function updateStatus(task: Task, status: Task['status']) {
       actual_duration: task.actual_duration || task.planned_duration,
       achievement: task.achievement || '',
       sync_enabled: task.sync_enabled !== false,
+      overall_completed: task.overall_status === 'completed',
     }
+    summaryForm.value = { content: '' }
+    loadingSummary.value = true
+    try {
+      const existing = await api.getTaskSummary(task.title)
+      if (existing) {
+        summaryForm.value.content = existing.content
+      }
+    } catch { }
+    loadingSummary.value = false
     showCompleteDialog.value = true
     return
   }
@@ -193,14 +207,33 @@ async function updateStatus(task: Task, status: Task['status']) {
 async function confirmComplete() {
   if (!completingTask.value) return
   const d = calcDuration(completeForm.value.actual_start, completeForm.value.actual_end)
-  await api.updateTask(completingTask.value.id, {
+  const updateData: Record<string, any> = {
     status: 'completed',
     actual_start: completeForm.value.actual_start || null,
     actual_end: completeForm.value.actual_end || null,
     actual_duration: d > 0 ? d : completeForm.value.actual_duration,
     achievement: completeForm.value.achievement,
     sync_enabled: completeForm.value.sync_enabled,
-  })
+  }
+  if (completeForm.value.overall_completed) {
+    updateData.overall_status = 'completed'
+  }
+  await api.updateTask(completingTask.value.id, updateData)
+  if (summaryForm.value.content.trim()) {
+    await api.saveTaskSummary(completingTask.value.title, summaryForm.value.content)
+  }
+  if (completeForm.value.overall_completed) {
+    const templates = await api.getRecurringTemplates()
+    const tmpl = templates.find(t => t.title === completingTask.value!.title)
+    if (tmpl) {
+      const allTasks = await api.getTasks()
+      const templateTasks = allTasks.filter(t => t.title === tmpl.title && t.status === 'completed')
+      const actualDays = new Set(templateTasks.map(t => t.date)).size
+      if (actualDays > 0 && actualDays < tmpl.planned_days) {
+        await api.updateRecurringTemplate(tmpl.id, { planned_days: actualDays })
+      }
+    }
+  }
   showCompleteDialog.value = false
   completingTask.value = null
   await loadTasks()
@@ -220,6 +253,17 @@ async function deleteTask(id: number) {
   if (!confirm('确定删除此任务？')) return
   await api.deleteTask(id)
   await loadTasks()
+}
+
+async function deleteTasksByName(title: string) {
+  if (!confirm(`确定删除所有名为「${title}」的任务？此操作不可撤销！`)) return
+  try {
+    const result = await api.deleteTasksByName(title)
+    alert(`已删除 ${result.count} 个任务`)
+    await loadTasks()
+  } catch (e: any) {
+    alert('删除失败: ' + (e.message || e))
+  }
 }
 
 function changeDate(delta: number) {
@@ -266,6 +310,7 @@ function formatDuration(min: number): string {
           <span v-if="task.category" class="category-tag">{{ task.category }}</span>
           <span v-if="task.is_recurring" class="badge-recurring" title="循环任务">🔄</span>
           <span v-if="task.sync_enabled === false" class="badge-nosync" title="不同步到知识库">🚫</span>
+          <span v-if="task.overall_status === 'completed'" class="badge-overall" title="整体已完成">✅</span>
         </div>
         <div class="task-meta">
           <span>计划: {{ formatDuration(getPlannedDuration(task)) }}</span>
@@ -284,7 +329,8 @@ function formatDuration(min: number): string {
           </select>
           <button class="btn-sm" @click="copyTask(task)">复制</button>
           <button class="btn-sm" @click="openEdit(task)">编辑</button>
-          <button class="btn-sm btn-danger" @click="deleteTask(task.id)">删除</button>
+          <button class="btn-sm btn-danger" @click="deleteTask(task.id)" :disabled="task.status === 'completed'">删除</button>
+          <button class="btn-sm btn-outline-danger" @click="deleteTasksByName(task.title)" :disabled="task.status === 'completed'">删除同名</button>
         </div>
       </div>
     </div>
@@ -296,6 +342,7 @@ function formatDuration(min: number): string {
           <span class="task-title" :class="{ done: task.status === 'completed' }">{{ task.title }}</span>
           <span v-if="task.category" class="category-tag">{{ task.category }}</span>
           <span v-if="task.sync_enabled === false" class="badge-nosync" title="不同步到知识库">🚫</span>
+          <span v-if="task.overall_status === 'completed'" class="badge-overall" title="整体已完成">✅</span>
         </div>
         <div class="task-meta">
           <span v-if="task.actual_duration">实际: {{ formatDuration(task.actual_duration) }}</span>
@@ -312,7 +359,7 @@ function formatDuration(min: number): string {
           </select>
           <button class="btn-sm" @click="copyTask(task)">复制</button>
           <button class="btn-sm" @click="openEdit(task)">编辑</button>
-          <button class="btn-sm btn-danger" @click="deleteTask(task.id)">删除</button>
+          <button class="btn-sm btn-danger" @click="deleteTask(task.id)" :disabled="task.status === 'completed'">删除</button>
         </div>
       </div>
     </div>
@@ -341,6 +388,10 @@ function formatDuration(min: number): string {
         <div class="form-group">
           <label>计划时长（分钟）</label>
           <input type="number" v-model.number="form.planned_duration" min="0" />
+        </div>
+        <div class="form-group">
+          <label>计划完成天数</label>
+          <input type="number" v-model.number="form.planned_days" min="1" />
         </div>
         <div class="form-group">
           <label>分类</label>
@@ -419,6 +470,21 @@ function formatDuration(min: number): string {
           </div>
           <textarea v-model="completeForm.achievement" placeholder="记录本次任务的成果、输出、收获...&#10;如：阅读了哪些章节、完成了什么输出、有什么心得" rows="5" maxlength="5000"></textarea>
           <span class="char-count">{{ completeForm.achievement.length }}/5000</span>
+        </div>
+        <div class="form-group">
+          <label>任务总结 <span class="text-muted">（跨天任务的整体总结，可选）</span></label>
+          <textarea v-model="summaryForm.content" placeholder="对于跨多天的任务，在此记录整体总结、心得、收获..." rows="4" maxlength="5000" :disabled="loadingSummary"></textarea>
+          <span class="char-count">{{ summaryForm.content.length }}/5000</span>
+        </div>
+        <div class="form-group">
+          <label class="toggle-row">
+            <span>整体任务已完成</span>
+            <label class="toggle-label">
+              <input type="checkbox" v-model="completeForm.overall_completed" />
+              <span class="toggle-slider"></span>
+            </label>
+          </label>
+          <span class="text-muted" style="font-size:12px">标记此任务整体完成，将调整模板的计划天数为已实际完成天数</span>
         </div>
         <div class="form-group">
           <label class="toggle-row">
@@ -550,6 +616,11 @@ function formatDuration(min: number): string {
 }
 
 .badge-nosync {
+  font-size: 14px;
+  cursor: help;
+}
+
+.badge-overall {
   font-size: 14px;
   cursor: help;
 }
@@ -713,6 +784,12 @@ function formatDuration(min: number): string {
   cursor: pointer;
   background: var(--card);
   color: var(--text);
+}
+
+.btn-sm:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
 }
 
 .btn-danger {

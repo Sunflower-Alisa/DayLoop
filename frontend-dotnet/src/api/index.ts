@@ -1,4 +1,4 @@
-import type { Task, DailyReview, RecurringTemplate, Note, Question } from '../types'
+import type { Task, DailyReview, RecurringTemplate, Note, Question, Summary, TaskSummary } from '../types'
 import { auth } from '../store/auth'
 
 function getBase(): string {
@@ -42,7 +42,10 @@ async function request<T>(url: string, options?: RequestInit): Promise<T> {
     throw new Error('未登录')
   }
   if (!res.ok) throw new Error(`HTTP ${res.status}`)
-  return res.json()
+  if (res.status === 204) return null as T
+  const text = await res.text()
+  if (!text) return null as T
+  return JSON.parse(text)
 }
 
 export const api = {
@@ -93,6 +96,10 @@ export const api = {
 
   deleteTask(id: number): Promise<void> {
     return request(`/tasks/${id}`, { method: 'DELETE' })
+  },
+
+  deleteTasksByName(title: string): Promise<{ message: string; count: number }> {
+    return request(`/tasks/by-name/${encodeURIComponent(title)}`, { method: 'DELETE' })
   },
 
   copyTask(id: number, date?: string): Promise<Task> {
@@ -240,5 +247,33 @@ export const api = {
     weeklyStats: { week: string; total: number; completed: number }[]
   }> {
     return request('/stats')
+  },
+
+  getTasksRange(start: string, end: string): Promise<Task[]> {
+    return request(`/tasks/range?start=${start}&end=${end}`)
+  },
+
+  getSummary(type: string, period: string): Promise<Summary | null> {
+    return request(`/summaries?type=${type}&period=${period}`)
+  },
+
+  saveSummary(type: string, period: string, content: string): Promise<Summary> {
+    return request(`/summaries/${type}/${period}`, { method: 'PUT', body: JSON.stringify({ content }) })
+  },
+
+  generateSummary(type: string, period: string): Promise<Summary> {
+    return request('/summaries/generate', { method: 'POST', body: JSON.stringify({ type, period }) })
+  },
+
+  listSummaries(type: string): Promise<{ period_key: string; updated_at: string }[]> {
+    return request(`/summaries/list?type=${type}`)
+  },
+
+  getTaskSummary(title: string): Promise<TaskSummary | null> {
+    return request(`/task-summaries?title=${encodeURIComponent(title)}`)
+  },
+
+  saveTaskSummary(title: string, content: string): Promise<TaskSummary> {
+    return request('/task-summaries', { method: 'PUT', body: JSON.stringify({ title, content }) })
   }
 }

@@ -21,6 +21,7 @@ builder.Services.AddCors(opts =>
     });
 });
 builder.Services.AddHostedService<RecurringTaskService>();
+builder.Services.AddHostedService<SummarySchedulerService>();
 
 var app = builder.Build();
 

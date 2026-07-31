@@ -14,13 +14,13 @@ router.get('/', (req, res) => {
 
 router.post('/', (req, res) => {
   const userId = getUserId(req) || 0;
-  const { title, start_time, end_time, planned_duration, category, priority, note, recurrence_type, recurrence_days, recurring_enabled, sync_enabled } = req.body;
+  const { title, start_time, end_time, planned_duration, category, priority, note, recurrence_type, recurrence_days, recurring_enabled, sync_enabled, planned_days } = req.body;
   if (!title) return res.status(400).json({ error: 'title is required' });
   const stmt = db.prepare(
-    `INSERT INTO recurring_templates (title, start_time, end_time, planned_duration, category, priority, note, user_id, recurrence_type, recurrence_days, recurring_enabled, sync_enabled)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    `INSERT INTO recurring_templates (title, start_time, end_time, planned_duration, category, priority, note, user_id, recurrence_type, recurrence_days, recurring_enabled, sync_enabled, planned_days)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
   );
-  const result = stmt.run(title, start_time || '', end_time || '', planned_duration || 0, category || '', priority || 2, note || '', userId, recurrence_type || 'daily', recurrence_days || '', recurring_enabled == null ? 1 : recurring_enabled ? 1 : 0, sync_enabled == null ? 1 : sync_enabled ? 1 : 0);
+  const result = stmt.run(title, start_time || '', end_time || '', planned_duration || 0, category || '', priority || 2, note || '', userId, recurrence_type || 'daily', recurrence_days || '', recurring_enabled == null ? 1 : recurring_enabled ? 1 : 0, sync_enabled == null ? 1 : sync_enabled ? 1 : 0, planned_days || 1);
   const template = db.prepare('SELECT * FROM recurring_templates WHERE id = ?').get(result.lastInsertRowid);
   res.status(201).json(template);
 });
@@ -28,7 +28,7 @@ router.post('/', (req, res) => {
 router.put('/:id', (req, res) => {
   const { id } = req.params;
   const userId = getUserId(req) || 0;
-  const { title, start_time, end_time, planned_duration, category, priority, note, recurrence_type, recurrence_days, recurring_enabled, sync_enabled } = req.body;
+  const { title, start_time, end_time, planned_duration, category, priority, note, recurrence_type, recurrence_days, recurring_enabled, sync_enabled, planned_days } = req.body;
   db.prepare(`
     UPDATE recurring_templates SET
       title = COALESCE(?, title),
@@ -41,9 +41,10 @@ router.put('/:id', (req, res) => {
       recurrence_type = COALESCE(?, recurrence_type),
       recurrence_days = COALESCE(?, recurrence_days),
       recurring_enabled = COALESCE(?, recurring_enabled),
-      sync_enabled = COALESCE(?, sync_enabled)
+      sync_enabled = COALESCE(?, sync_enabled),
+      planned_days = COALESCE(?, planned_days)
     WHERE id = ? AND user_id = ?
-  `).run(title ?? null, start_time ?? null, end_time ?? null, planned_duration ?? null, category ?? null, priority ?? null, note ?? null, recurrence_type ?? null, recurrence_days ?? null, recurring_enabled ?? null, sync_enabled ?? null, id, userId);
+  `).run(title ?? null, start_time ?? null, end_time ?? null, planned_duration ?? null, category ?? null, priority ?? null, note ?? null, recurrence_type ?? null, recurrence_days ?? null, recurring_enabled ?? null, sync_enabled ?? null, planned_days ?? null, id, userId);
   const template = db.prepare('SELECT * FROM recurring_templates WHERE id = ?').get(id);
   if (!template) return res.status(404).json({ error: 'Template not found' });
   res.json(template);
@@ -70,13 +71,15 @@ router.post('/generate', (req, res) => {
       if (!days.includes(String(dateDow))) continue;
     }
     const existing = db.prepare('SELECT id FROM tasks WHERE user_id = ? AND date = ? AND recurring_template_id = ?').get(userId, date, t.id);
-    if (!existing) {
-      const result = db.prepare(
-        `INSERT INTO tasks (date, title, start_time, end_time, planned_duration, category, priority, note, is_recurring, recurring_template_id, user_id, sync_enabled)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?)`
-      ).run(date, t.title, t.start_time, t.end_time, t.planned_duration, t.category, t.priority, t.note, t.id, userId, t.sync_enabled !== false ? 1 : 0);
-      created.push(result.lastInsertRowid);
-    }
+    if (existing) continue;
+    const tPlannedDays = t.planned_days || 1;
+    const taskCount = db.prepare('SELECT COUNT(DISTINCT date) as cnt FROM tasks WHERE user_id = ? AND recurring_template_id = ?').get(userId, t.id);
+    if (taskCount && taskCount.cnt >= tPlannedDays) continue;
+    const result = db.prepare(
+      `INSERT INTO tasks (date, title, start_time, end_time, planned_duration, category, priority, note, is_recurring, recurring_template_id, user_id, sync_enabled, planned_days, overall_status)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?, ?, 'pending')`
+    ).run(date, t.title, t.start_time, t.end_time, t.planned_duration, t.category, t.priority, t.note, t.id, userId, t.sync_enabled !== false ? 1 : 0, tPlannedDays);
+    created.push(result.lastInsertRowid);
   }
   const tasks = db.prepare('SELECT * FROM tasks WHERE id IN (' + created.map(() => '?').join(',') + ')').all(...created);
   res.json(tasks);

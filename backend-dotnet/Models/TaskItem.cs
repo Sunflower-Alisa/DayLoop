@@ -23,6 +23,8 @@ public class TaskItem
     [JsonPropertyName("achievement")] public string Achievement { get; set; } = "";
     [JsonPropertyName("note_id")] public long? NoteId { get; set; }
     [JsonPropertyName("sync_enabled")] public bool SyncEnabled { get; set; } = true;
+    [JsonPropertyName("planned_days")] public int PlannedDays { get; set; } = 1;
+    [JsonPropertyName("overall_status")] public string OverallStatus { get; set; } = "pending";
     [JsonPropertyName("tags")] public string Tags { get; set; } = "";
     [JsonPropertyName("created_at")] public string CreatedAt { get; set; } = "";
     [JsonPropertyName("updated_at")] public string UpdatedAt { get; set; } = "";
@@ -43,6 +45,7 @@ public class CreateTaskRequest
     [JsonPropertyName("achievement")] public string? Achievement { get; set; }
     [JsonPropertyName("note_id")] public long? NoteId { get; set; }
     [JsonPropertyName("sync_enabled")] public bool? SyncEnabled { get; set; }
+    [JsonPropertyName("planned_days")] public int? PlannedDays { get; set; }
 }
 
 public class UpdateTaskRequest
@@ -64,6 +67,8 @@ public class UpdateTaskRequest
     [JsonPropertyName("achievement")] public string? Achievement { get; set; }
     [JsonPropertyName("note_id")] public long? NoteId { get; set; }
     [JsonPropertyName("sync_enabled")] public bool? SyncEnabled { get; set; }
+    [JsonPropertyName("planned_days")] public int? PlannedDays { get; set; }
+    [JsonPropertyName("overall_status")] public string? OverallStatus { get; set; }
 }
 
 public class CopyTaskRequest

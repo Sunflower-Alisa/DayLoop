@@ -16,6 +16,8 @@ import Profile from '../views/Profile.vue'
 import RecurringTemplates from '../views/RecurringTemplates.vue'
 import Questions from '../views/Questions.vue'
 import QuestionDetail from '../views/QuestionDetail.vue'
+import Summary from '../views/Summary.vue'
+import Calendar from '../views/Calendar.vue'
 
 const routes = [
   { path: '/login', name: 'login', component: Login, meta: { guest: true } },
@@ -37,6 +39,8 @@ const routes = [
   { path: '/questions/categories', name: 'question-categories', component: CategoryManage, meta: { auth: true } },
   { path: '/questions/new', name: 'question-new', component: QuestionDetail, meta: { auth: true } },
   { path: '/questions/:id', name: 'question-detail', component: QuestionDetail, meta: { auth: true } },
+  { path: '/summary', name: 'summary', component: Summary, meta: { auth: true } },
+  { path: '/calendar', name: 'calendar', component: Calendar, meta: { auth: true } },
 ]
 
 const router = createRouter({

@@ -151,6 +151,8 @@ const coreNav = [
   { name: 'notes', label: '备忘录', icon: '📝' },
   { name: 'questions', label: '问题库', icon: '❓' },
   { name: 'review', label: '复盘', icon: '📊' },
+  { name: 'summary', label: '总结', icon: '📑' },
+  { name: 'calendar', label: '日历预览', icon: '📅' },
   { name: 'achievements', label: '成果', icon: '🏆' },
   { name: 'statistics', label: '统计', icon: '📈' },
 ]
