@@ -184,6 +184,7 @@ public static class AuthService
         using var tx = conn.BeginTransaction();
         try
         {
+            cmd.Transaction = tx;
             cmd.CommandText = "DELETE FROM tasks WHERE user_id = @p0";
             cmd.ExecuteNonQuery();
             cmd.CommandText = "DELETE FROM daily_reviews WHERE user_id = @p0";

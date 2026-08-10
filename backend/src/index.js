@@ -4,6 +4,7 @@ const path = require('path');
 const os = require('os');
 const cron = require('node-cron');
 const db = require('./database');
+const { seed } = require('./seed');
 const authRouter = require('./routes/auth');
 const tasksRouter = require('./routes/tasks');
 const reviewsRouter = require('./routes/reviews');
@@ -17,6 +18,13 @@ const settingsRouter = require('./routes/settings');
 const questionsRouter = require('./routes/questions');
 const summariesRouter = require('./routes/summaries');
 const taskSummariesRouter = require('./routes/task-summaries');
+const wordsRouter = require('./routes/words');
+const scenariosRouter = require('./routes/scenarios');
+const speakingRouter = require('./routes/speaking');
+const clipsRouter = require('./routes/clips');
+const englishRouter = require('./routes/english');
+
+seed();
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -62,14 +70,20 @@ app.use('/api/settings', settingsRouter);
 app.use('/api/questions', questionsRouter);
 app.use('/api/summaries', summariesRouter);
 app.use('/api/task-summaries', taskSummariesRouter);
+app.use('/api/words', wordsRouter);
+app.use('/api/scenarios', scenariosRouter);
+app.use('/api/speaking', speakingRouter);
+app.use('/api/clips', clipsRouter);
+app.use('/api/english', englishRouter);
 
 app.use('/uploads', express.static(path.join(__dirname, '..', 'data', 'uploads')));
 app.use(express.static(path.join(__dirname, '..', '..', 'frontend', 'dist')));
 
 app.get('*', (req, res) => {
-  if (!req.path.startsWith('/api')) {
-    res.sendFile(path.join(__dirname, '..', '..', 'frontend', 'dist', 'index.html'));
+  if (req.path.startsWith('/api')) {
+    return res.status(404).json({ error: 'Not found' });
   }
+  res.sendFile(path.join(__dirname, '..', '..', 'frontend', 'dist', 'index.html'));
 });
 
 // Auto-generate recurring tasks every midnight
@@ -91,7 +105,7 @@ const generateNextDayTasks = () => {
       const existing = db.prepare('SELECT id FROM tasks WHERE date = ? AND recurring_template_id = ?').get(dateStr, t.id);
       if (existing) continue;
       const tPlannedDays = t.planned_days || 1;
-      const taskCount = db.prepare('SELECT COUNT(DISTINCT date) as cnt FROM tasks WHERE recurring_template_id = ?').get(t.id);
+      const taskCount = db.prepare("SELECT COUNT(DISTINCT date) as cnt FROM tasks WHERE recurring_template_id = ? AND status != 'cancelled'").get(t.id);
       if (taskCount && taskCount.cnt >= tPlannedDays) continue;
       db.prepare(
         `INSERT INTO tasks (date, title, start_time, end_time, planned_duration, category, priority, note, is_recurring, recurring_template_id, sync_enabled, planned_days, overall_status)

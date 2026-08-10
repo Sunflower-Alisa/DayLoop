@@ -157,6 +157,15 @@ const coreNav = [
   { name: 'statistics', label: '统计', icon: '📈' },
 ]
 
+const englishNav = [
+  { name: 'english', label: '英语学习', icon: '🇬🇧' },
+  { name: 'english-words', label: '单词背诵', icon: '🔤' },
+  { name: 'english-scenarios', label: '场景英语', icon: '💬' },
+  { name: 'english-speaking', label: '口语跟读', icon: '🎙️' },
+  { name: 'english-clips', label: '影视切片', icon: '🎬' },
+  { name: 'english-statistics', label: '学习统计', icon: '📈' },
+]
+
 onMounted(() => {
   checkVersion()
   if (!('Notification' in window) || !('serviceWorker' in navigator)) return
@@ -216,6 +225,14 @@ onMounted(() => {
         <div class="sidebar-section">
           <div class="sidebar-section-title">核心功能</div>
           <button v-for="item in coreNav" :key="item.name" class="sidebar-item" @click="navigateTo(item.name)">
+            <span class="sidebar-item-icon">{{ item.icon }}</span>
+            <span>{{ item.label }}</span>
+          </button>
+        </div>
+        <div class="sidebar-divider"></div>
+        <div class="sidebar-section">
+          <div class="sidebar-section-title">英语学习</div>
+          <button v-for="item in englishNav" :key="item.name" class="sidebar-item" @click="navigateTo(item.name)">
             <span class="sidebar-item-icon">{{ item.icon }}</span>
             <span>{{ item.label }}</span>
           </button>

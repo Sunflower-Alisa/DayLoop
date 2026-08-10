@@ -30,6 +30,7 @@ app.MapControllers();
 
 // Initialize database
 Database.Initialize();
+SeedData.Seed();
 Console.WriteLine("[Scheduler] Registered: auto-generate recurring tasks at midnight");
 
 // Serve uploaded files
@@ -101,3 +102,5 @@ static string GetLANIP()
     catch { }
     return "localhost";
 }
+
+public partial class Program { }

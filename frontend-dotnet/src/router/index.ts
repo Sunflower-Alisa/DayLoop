@@ -18,6 +18,21 @@ import Questions from '../views/Questions.vue'
 import QuestionDetail from '../views/QuestionDetail.vue'
 import Summary from '../views/Summary.vue'
 import Calendar from '../views/Calendar.vue'
+import EnglishHome from '../views/english/EnglishHome.vue'
+import Words from '../views/english/Words.vue'
+import WordLearn from '../views/english/WordLearn.vue'
+import WordReview from '../views/english/WordReview.vue'
+import WordDetail from '../views/english/WordDetail.vue'
+import WrongWords from '../views/english/WrongWords.vue'
+import WordBooks from '../views/english/WordBooks.vue'
+import WordBookWords from '../views/english/WordBookWords.vue'
+import Scenarios from '../views/english/Scenarios.vue'
+import ScenarioDetail from '../views/english/ScenarioDetail.vue'
+import Speaking from '../views/english/Speaking.vue'
+import SpeakingPractice from '../views/english/SpeakingPractice.vue'
+import Clips from '../views/english/Clips.vue'
+import ClipDetail from '../views/english/ClipDetail.vue'
+import EnglishStatistics from '../views/english/EnglishStatistics.vue'
 
 const routes = [
   { path: '/login', name: 'login', component: Login, meta: { guest: true } },
@@ -41,6 +56,21 @@ const routes = [
   { path: '/questions/:id', name: 'question-detail', component: QuestionDetail, meta: { auth: true } },
   { path: '/summary', name: 'summary', component: Summary, meta: { auth: true } },
   { path: '/calendar', name: 'calendar', component: Calendar, meta: { auth: true } },
+  { path: '/english', name: 'english', component: EnglishHome, meta: { auth: true } },
+  { path: '/english/words', name: 'english-words', component: Words, meta: { auth: true } },
+  { path: '/english/words/learn', name: 'english-words-learn', component: WordLearn, meta: { auth: true, fullscreen: true } },
+  { path: '/english/words/review', name: 'english-words-review', component: WordReview, meta: { auth: true, fullscreen: true } },
+  { path: '/english/words/wrong', name: 'english-words-wrong', component: WrongWords, meta: { auth: true } },
+  { path: '/english/words/:id', name: 'english-word-detail', component: WordDetail, meta: { auth: true } },
+  { path: '/english/wordbooks', name: 'english-wordbooks', component: WordBooks, meta: { auth: true } },
+  { path: '/english/wordbooks/:id/words', name: 'english-wordbooks-words', component: WordBookWords, meta: { auth: true } },
+  { path: '/english/scenarios', name: 'english-scenarios', component: Scenarios, meta: { auth: true } },
+  { path: '/english/scenarios/:id', name: 'english-scenario-detail', component: ScenarioDetail, meta: { auth: true } },
+  { path: '/english/speaking', name: 'english-speaking', component: Speaking, meta: { auth: true } },
+  { path: '/english/speaking/:id', name: 'english-speaking-detail', component: SpeakingPractice, meta: { auth: true } },
+  { path: '/english/clips', name: 'english-clips', component: Clips, meta: { auth: true } },
+  { path: '/english/clips/:id', name: 'english-clip-detail', component: ClipDetail, meta: { auth: true } },
+  { path: '/english/statistics', name: 'english-statistics', component: EnglishStatistics, meta: { auth: true } },
 ]
 
 const router = createRouter({

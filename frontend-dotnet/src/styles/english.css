@@ -1,0 +1,343 @@
+/* DayLoop 英语学习模块通用样式 */
+.e-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.e-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.e-title {
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.e-subtitle {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.e-card {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 16px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  border: 1px solid var(--border);
+}
+
+.e-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 18px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--card);
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.e-btn:hover:not(:disabled) {
+  border-color: var(--primary);
+  color: var(--primary);
+  transform: translateY(-1px);
+}
+
+.e-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.e-btn-primary {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+}
+
+.e-btn-primary:hover:not(:disabled) {
+  background: var(--primary-dark);
+  color: #fff;
+}
+
+.e-btn-block {
+  width: 100%;
+}
+
+.e-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  background: #eef2ff;
+  color: var(--primary);
+}
+
+.e-chip-green { background: #ecfdf5; color: var(--success); }
+.e-chip-amber { background: #fef3c7; color: #92400e; }
+.e-chip-red { background: #fef2f2; color: var(--danger); }
+.e-chip-gray { background: var(--bg); color: var(--text-secondary); }
+
+.e-progress {
+  height: 8px;
+  background: var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.e-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary), var(--primary-light));
+  border-radius: 4px;
+  transition: width 0.4s ease;
+}
+
+.e-progress-fill.green { background: linear-gradient(90deg, #10b981, #34d399); }
+.e-progress-fill.amber { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+
+.e-empty {
+  text-align: center;
+  padding: 40px 16px;
+  color: var(--text-secondary);
+  font-size: 14px;
+  background: var(--card);
+  border-radius: var(--radius);
+  border: 1px dashed var(--border);
+}
+
+.e-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.e-tabs {
+  display: flex;
+  gap: 6px;
+  padding: 4px;
+  background: var(--bg);
+  border-radius: 10px;
+  overflow-x: auto;
+}
+
+.e-tab {
+  flex: 1;
+  white-space: nowrap;
+  padding: 8px 14px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.e-tab.active {
+  background: var(--card);
+  color: var(--primary);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+
+.e-loading {
+  text-align: center;
+  padding: 40px;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+/* 单词卡片 */
+.e-word-card {
+  border-radius: 16px;
+  overflow: hidden;
+  background: var(--card);
+  border: 1px solid var(--border);
+}
+
+.e-word-image {
+  aspect-ratio: 16 / 9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 56px;
+  font-weight: 800;
+  color: #fff;
+  position: relative;
+}
+
+.e-word-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.e-word-image .fallback-letter {
+  font-size: 72px;
+  font-weight: 800;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.e-word-body {
+  padding: 14px 16px;
+}
+
+.e-word-main {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.e-word-main .word {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.e-word-main .phonetic {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.e-word-main .pos {
+  font-size: 13px;
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.e-word-main .meaning {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+  margin-top: 4px;
+}
+
+.e-example {
+  margin-top: 10px;
+  padding: 10px 12px;
+  background: var(--bg);
+  border-radius: 8px;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.e-example .en { color: var(--text); }
+.e-example .cn { color: var(--text-secondary); margin-top: 2px; }
+
+.e-speak {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: none;
+  background: var(--primary);
+  color: #fff;
+  font-size: 15px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: transform 0.15s;
+}
+
+.e-speak:hover { transform: scale(1.08); }
+
+/* 底部操作条 */
+.e-bottom-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.e-bottom-actions .e-btn { flex: 1; }
+
+/* 统计数字 */
+.e-stat {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 14px;
+  text-align: center;
+  border: 1px solid var(--border);
+}
+
+.e-stat .num {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--primary);
+}
+
+.e-stat .label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+/* 列表项 */
+.e-list-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: left;
+  width: 100%;
+}
+
+.e-list-item:hover {
+  border-color: var(--primary);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.e-list-item .icon {
+  font-size: 26px;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.e-list-item .body {
+  flex: 1;
+  min-width: 0;
+}
+
+.e-list-item .title {
+  font-size: 15px;
+  font-weight: 600;
+  display: block;
+}
+
+.e-list-item .desc {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.e-list-item .arrow {
+  color: var(--text-secondary);
+  font-size: 18px;
+  flex-shrink: 0;
+}

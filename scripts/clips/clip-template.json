@@ -1,0 +1,26 @@
+{
+  "title": "示例片段",
+  "source": "本地素材",
+  "level": "medium",
+  "tags": "日常,对话",
+  "description": "在这里填写片段简介。",
+  "video": "C:/path/to/video.mp4",
+  "cover": "",
+  "duration": 30,
+  "lines": [
+    {
+      "speaker": "A",
+      "en_text": "Hi there!",
+      "cn_text": "你好！",
+      "start_time": 0,
+      "end_time": 2.5
+    },
+    {
+      "speaker": "B",
+      "en_text": "Hey, long time no see.",
+      "cn_text": "嘿，好久不见。",
+      "start_time": 2.5,
+      "end_time": 5
+    }
+  ]
+}

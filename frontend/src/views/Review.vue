@@ -19,6 +19,7 @@ const plannedRate = computed(() => plannedTotal.value > 0 ? Math.round(plannedCo
 const plannedDuration = computed(() => plannedTasks.value.reduce((s, t) => s + t.planned_duration, 0))
 const actualDuration = computed(() => tasks.value.reduce((s, t) => s + (t.actual_duration || 0), 0))
 const unplannedCount = computed(() => unplannedTasks.value.length)
+const unplannedDuration = computed(() => unplannedTasks.value.reduce((s, t) => s + (t.actual_duration || 0), 0))
 const durationDiff = computed(() => actualDuration.value - plannedDuration.value)
 
 onMounted(() => loadData(selectedDate.value))
@@ -43,7 +44,7 @@ function generateSummary() {
   s += `，完成率 ${plannedRate.value}%。\n`
 
   if (unplannedCount.value > 0) {
-    s += `计划外任务 ${unplannedCount.value} 项。\n`
+    s += `计划外任务 ${unplannedCount.value} 项，共 ${formatDuration(unplannedDuration.value)}。\n`
   }
 
   s += `\n计划总时长: ${formatDuration(plannedDuration.value)}`
@@ -130,6 +131,10 @@ function formatDuration(min: number): string {
       <div class="stat-card" v-if="unplannedCount > 0">
         <span class="stat-value">{{ unplannedCount }}</span>
         <span class="stat-label">计划外任务</span>
+      </div>
+      <div class="stat-card" v-if="unplannedCount > 0">
+        <span class="stat-value">{{ formatDuration(unplannedDuration) }}</span>
+        <span class="stat-label">计划外总时长</span>
       </div>
       <div class="stat-card">
         <span :class="['stat-value', durationDiff > 0 ? 'text-warning' : 'text-success']">

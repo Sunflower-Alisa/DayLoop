@@ -2,7 +2,10 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { api } from '../api'
+import { englishApi } from '../api/english'
 import type { Task } from '../types'
+import type { EnglishDashboard } from '../types/english'
+import { formatDuration } from '../utils/speech'
 
 const router = useRouter()
 
@@ -179,7 +182,29 @@ function getStatusClass(status: string) {
 
 onMounted(() => {
   fetchTasks()
+  fetchEnglish()
 })
+
+// English module summary
+const english = ref<EnglishDashboard | null>(null)
+
+const englishNewPct = computed(() =>
+  english.value && english.value.new_goal > 0
+    ? Math.min(100, Math.round((english.value.new_done / english.value.new_goal) * 100))
+    : 0
+)
+
+async function fetchEnglish() {
+  try {
+    english.value = await englishApi.dashboard()
+  } catch (e) {
+    // ignore
+  }
+}
+
+function goEnglish(name: string) {
+  router.push({ name })
+}
 </script>
 
 <template>
@@ -261,6 +286,38 @@ onMounted(() => {
         </div>
         <span class="entry-arrow">→</span>
       </button>
+    </div>
+
+    <div v-if="english" class="section-header">
+      <h3>英语学习</h3>
+      <button class="section-link" @click="goEnglish('english')">进入 →</button>
+    </div>
+
+    <div v-if="english" class="english-module">
+      <div class="em-head">
+        <div class="em-left">
+          <span class="em-label">今日新词</span>
+          <div class="em-num">{{ english.new_done }}<span>/{{ english.new_goal }}</span></div>
+        </div>
+        <div class="em-right">
+          <span v-if="english.streak" class="em-streak">🔥 {{ english.streak }} 天</span>
+          <span class="em-time">⏱ {{ formatDuration(english.today_seconds) }}</span>
+        </div>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" :style="{ width: englishNewPct + '%' }"></div>
+      </div>
+      <div class="em-stats">
+        <div class="ems-item"><span class="ems-num">{{ english.total_words }}</span><span class="ems-label">总词数</span></div>
+        <div class="ems-item"><span class="ems-num" style="color: var(--success)">{{ english.mastered_words }}</span><span class="ems-label">已掌握</span></div>
+        <div class="ems-item"><span class="ems-num">{{ english.scenario_mastered }}/{{ english.scenario_count }}</span><span class="ems-label">场景掌握</span></div>
+        <div class="ems-item"><span class="ems-num">{{ english.speaking_avg || '—' }}</span><span class="ems-label">口语均分</span></div>
+      </div>
+      <div class="em-actions">
+        <button class="em-btn" @click="goEnglish('english-words')">🔤 背单词</button>
+        <button class="em-btn" @click="goEnglish('english-scenarios')">💬 场景</button>
+        <button class="em-btn" @click="goEnglish('english-speaking')">🎙️ 口语</button>
+      </div>
     </div>
 
     <div v-if="showCompleteDialog && completingTask" class="modal-overlay" @click.self="cancelComplete">
@@ -844,4 +901,26 @@ onMounted(() => {
   color: white;
   border-color: var(--primary);
 }
+
+.english-module {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 16px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  border: 1.5px solid var(--primary-light);
+}
+.em-head { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 10px; }
+.em-label { font-size: 12px; color: var(--text-secondary); }
+.em-num { font-size: 24px; font-weight: 800; color: var(--primary); }
+.em-num span { font-size: 13px; color: var(--text-secondary); }
+.em-right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+.em-streak { font-size: 12px; font-weight: 600; color: #92400e; background: #fef3c7; padding: 2px 8px; border-radius: 999px; }
+.em-time { font-size: 12px; color: var(--text-secondary); }
+.em-stats { display: flex; margin-top: 12px; }
+.ems-item { flex: 1; text-align: center; }
+.ems-num { display: block; font-size: 17px; font-weight: 700; color: var(--primary); }
+.ems-label { display: block; font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
+.em-actions { display: flex; gap: 8px; margin-top: 12px; }
+.em-btn { flex: 1; padding: 9px; border: 1px solid var(--border); border-radius: 8px; background: var(--card); color: var(--text); font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.15s; }
+.em-btn:hover { border-color: var(--primary); color: var(--primary); background: #eef2ff; }
 </style>

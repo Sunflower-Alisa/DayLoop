@@ -204,6 +204,178 @@ public static class Database
         cmd5.ExecuteNonQuery();
 
         AddColumnIfMissing(conn, "daily_reviews", "tags", "TEXT DEFAULT ''");
+
+        // ===== English Learning tables =====
+        using var eng = conn.CreateCommand();
+        eng.CommandText = """
+            CREATE TABLE IF NOT EXISTS word_books (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                level TEXT DEFAULT 'intermediate',
+                description TEXT DEFAULT '',
+                cover_color TEXT DEFAULT '#4f46e5',
+                is_default INTEGER DEFAULT 0,
+                user_id INTEGER DEFAULT 0,
+                created_at TEXT DEFAULT (datetime('now','localtime'))
+            );
+
+            CREATE TABLE IF NOT EXISTS words (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                word TEXT NOT NULL,
+                phonetic TEXT DEFAULT '',
+                pos TEXT DEFAULT '',
+                meaning TEXT DEFAULT '',
+                example_en TEXT DEFAULT '',
+                example_cn TEXT DEFAULT '',
+                image_url TEXT DEFAULT '',
+                audio_url TEXT DEFAULT '',
+                book_id INTEGER DEFAULT 0,
+                created_at TEXT DEFAULT (datetime('now','localtime'))
+            );
+
+            CREATE TABLE IF NOT EXISTS word_progress (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                word_id INTEGER NOT NULL,
+                status TEXT DEFAULT 'new',
+                stage INTEGER DEFAULT 0,
+                correct_streak INTEGER DEFAULT 0,
+                wrong_count INTEGER DEFAULT 0,
+                last_review_at TEXT DEFAULT '',
+                next_review_at TEXT DEFAULT '',
+                UNIQUE(user_id, word_id)
+            );
+
+            CREATE TABLE IF NOT EXISTS learning_logs (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                date TEXT DEFAULT '',
+                type TEXT DEFAULT 'new',
+                word_id INTEGER,
+                topic_id INTEGER,
+                result TEXT DEFAULT '',
+                created_at TEXT DEFAULT (datetime('now','localtime'))
+            );
+
+            CREATE TABLE IF NOT EXISTS wrong_words (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                word_id INTEGER NOT NULL,
+                created_at TEXT DEFAULT (datetime('now','localtime')),
+                UNIQUE(user_id, word_id)
+            );
+
+            CREATE TABLE IF NOT EXISTS study_sessions (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                date TEXT DEFAULT '',
+                module TEXT DEFAULT '',
+                start_time TEXT DEFAULT '',
+                end_time TEXT DEFAULT '',
+                duration_seconds INTEGER DEFAULT 0,
+                created_at TEXT DEFAULT (datetime('now','localtime'))
+            );
+
+            CREATE TABLE IF NOT EXISTS scenarios (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                title TEXT NOT NULL,
+                category TEXT DEFAULT '',
+                level INTEGER DEFAULT 1,
+                icon TEXT DEFAULT '',
+                description TEXT DEFAULT '',
+                user_id INTEGER DEFAULT 0,
+                created_at TEXT DEFAULT (datetime('now','localtime'))
+            );
+
+            CREATE TABLE IF NOT EXISTS scenario_lines (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                scenario_id INTEGER NOT NULL,
+                ord INTEGER DEFAULT 0,
+                speaker TEXT DEFAULT '',
+                en_text TEXT DEFAULT '',
+                cn_text TEXT DEFAULT '',
+                audio_url TEXT DEFAULT ''
+            );
+
+            CREATE TABLE IF NOT EXISTS scenario_phrases (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                scenario_id INTEGER NOT NULL,
+                phrase TEXT DEFAULT '',
+                meaning TEXT DEFAULT '',
+                example_en TEXT DEFAULT '',
+                example_cn TEXT DEFAULT ''
+            );
+
+            CREATE TABLE IF NOT EXISTS scenario_quizzes (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                scenario_id INTEGER NOT NULL,
+                question_en TEXT DEFAULT '',
+                question_cn TEXT DEFAULT '',
+                options TEXT DEFAULT '',
+                answer_index INTEGER DEFAULT 0,
+                explanation TEXT DEFAULT ''
+            );
+
+            CREATE TABLE IF NOT EXISTS scenario_progress (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                scenario_id INTEGER NOT NULL,
+                mastered INTEGER DEFAULT 0,
+                updated_at TEXT DEFAULT (datetime('now','localtime')),
+                UNIQUE(user_id, scenario_id)
+            );
+
+            CREATE TABLE IF NOT EXISTS speaking_topics (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                title TEXT NOT NULL,
+                category TEXT DEFAULT 'daily',
+                level TEXT DEFAULT 'beginner',
+                lines TEXT DEFAULT '',
+                source_type TEXT DEFAULT 'topic',
+                source_id INTEGER DEFAULT 0,
+                user_id INTEGER DEFAULT 0,
+                created_at TEXT DEFAULT (datetime('now','localtime'))
+            );
+
+            CREATE TABLE IF NOT EXISTS speaking_records (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                topic_id INTEGER NOT NULL,
+                line_index INTEGER DEFAULT 0,
+                audio_url TEXT DEFAULT '',
+                accuracy INTEGER DEFAULT 0,
+                fluency INTEGER DEFAULT 0,
+                completeness INTEGER DEFAULT 0,
+                overall INTEGER DEFAULT 0,
+                created_at TEXT DEFAULT (datetime('now','localtime'))
+            );
+
+            CREATE TABLE IF NOT EXISTS video_clips (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                title TEXT NOT NULL,
+                source TEXT DEFAULT '',
+                cover_url TEXT DEFAULT '',
+                path TEXT DEFAULT '',
+                duration INTEGER DEFAULT 0,
+                level TEXT DEFAULT 'medium',
+                tags TEXT DEFAULT '',
+                description TEXT DEFAULT '',
+                user_id INTEGER DEFAULT 0,
+                created_at TEXT DEFAULT (datetime('now','localtime'))
+            );
+
+            CREATE TABLE IF NOT EXISTS clip_lines (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                clip_id INTEGER NOT NULL,
+                ord INTEGER DEFAULT 0,
+                speaker TEXT DEFAULT '',
+                en_text TEXT DEFAULT '',
+                cn_text TEXT DEFAULT '',
+                start_time REAL DEFAULT 0,
+                end_time REAL DEFAULT 0
+            );
+        """;
+        eng.ExecuteNonQuery();
     }
 
     private static void AddColumnIfMissing(SqliteConnection conn, string table, string column, string definition)

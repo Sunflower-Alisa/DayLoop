@@ -47,10 +47,10 @@ echo  Done
 
 :: Install Node.js backend service
 echo [2/4] Installing Node.js backend service (port 3001)...
-nssm install DayLoop-Node "D:\Program Files\nodejs\node.exe" "D:\02.Personal\04..代码\Code\DayLoop\backend\src\index.js"
-nssm set DayLoop-Node AppDirectory "D:\02.Personal\04..代码\Code\DayLoop\backend"
-nssm set DayLoop-Node AppStdout "D:\02.Personal\04..代码\Code\DayLoop\backend\logs\stdout.log"
-nssm set DayLoop-Node AppStderr "D:\02.Personal\04..代码\Code\DayLoop\backend\logs\stderr.log"
+nssm install DayLoop-Node "D:\Program Files\nodejs\node.exe" "D:\02.Personal\04.Code\DayLoop\backend\src\index.js"
+nssm set DayLoop-Node AppDirectory "D:\02.Personal\04.Code\DayLoop\backend"
+nssm set DayLoop-Node AppStdout "D:\02.Personal\04.Code\DayLoop\backend\logs\stdout.log"
+nssm set DayLoop-Node AppStderr "D:\02.Personal\04.Code\DayLoop\backend\logs\stderr.log"
 nssm set DayLoop-Node AppNoConsole 1
 nssm set DayLoop-Node DisplayName "DayLoop Node.js Backend"
 nssm set DayLoop-Node Description "DayLoop daily planner - Node.js backend on port 3001, also serves frontend static files"
@@ -62,9 +62,9 @@ echo  Done
 :: Install .NET backend service
 echo [3/4] Installing .NET backend service (port 5000)...
 nssm install DayLoop-DotNet "C:\Program Files\dotnet\dotnet.exe" "run --urls http://0.0.0.0:5000"
-nssm set DayLoop-DotNet AppDirectory "D:\02.Personal\04..代码\Code\DayLoop\backend-dotnet"
-nssm set DayLoop-DotNet AppStdout "D:\02.Personal\04..代码\Code\DayLoop\backend-dotnet\logs\stdout.log"
-nssm set DayLoop-DotNet AppStderr "D:\02.Personal\04..代码\Code\DayLoop\backend-dotnet\logs\stderr.log"
+nssm set DayLoop-DotNet AppDirectory "D:\02.Personal\04.Code\DayLoop\backend-dotnet"
+nssm set DayLoop-DotNet AppStdout "D:\02.Personal\04.Code\DayLoop\backend-dotnet\logs\stdout.log"
+nssm set DayLoop-DotNet AppStderr "D:\02.Personal\04.Code\DayLoop\backend-dotnet\logs\stderr.log"
 nssm set DayLoop-DotNet AppNoConsole 1
 nssm set DayLoop-DotNet DisplayName "DayLoop .NET Backend"
 nssm set DayLoop-DotNet Description "DayLoop daily planner - .NET backend on port 5000"

@@ -161,7 +161,7 @@ public class RecurringController : ControllerBase
             if (existing != null) continue;
 
             var tPlannedDays = t.PlannedDays;
-            cmd.CommandText = "SELECT COUNT(DISTINCT date) FROM tasks WHERE user_id = @uid AND recurring_template_id = @tid";
+            cmd.CommandText = "SELECT COUNT(DISTINCT date) FROM tasks WHERE user_id = @uid AND recurring_template_id = @tid AND status != 'cancelled'";
             cmd.Parameters.Clear();
             cmd.Parameters.AddWithValue("@uid", userId);
             cmd.Parameters.AddWithValue("@tid", t.Id);

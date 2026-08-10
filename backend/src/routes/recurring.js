@@ -73,7 +73,7 @@ router.post('/generate', (req, res) => {
     const existing = db.prepare('SELECT id FROM tasks WHERE user_id = ? AND date = ? AND recurring_template_id = ?').get(userId, date, t.id);
     if (existing) continue;
     const tPlannedDays = t.planned_days || 1;
-    const taskCount = db.prepare('SELECT COUNT(DISTINCT date) as cnt FROM tasks WHERE user_id = ? AND recurring_template_id = ?').get(userId, t.id);
+    const taskCount = db.prepare("SELECT COUNT(DISTINCT date) as cnt FROM tasks WHERE user_id = ? AND recurring_template_id = ? AND status != 'cancelled'").get(userId, t.id);
     if (taskCount && taskCount.cnt >= tPlannedDays) continue;
     const result = db.prepare(
       `INSERT INTO tasks (date, title, start_time, end_time, planned_duration, category, priority, note, is_recurring, recurring_template_id, user_id, sync_enabled, planned_days, overall_status)

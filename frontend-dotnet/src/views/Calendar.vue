@@ -122,23 +122,14 @@ function totalDuration(tasks: Task[]): number {
 function freeTime(date: string): string {
   const dayTasks = tasksForDate(date).filter(t => t.start_time && t.end_time)
   if (dayTasks.length === 0) return '全天空闲'
-  const slots = dayTasks.map(t => {
+  let occupied = 0
+  for (const t of dayTasks) {
     const [sh, sm] = t.start_time!.split(':').map(Number)
     const [eh, em] = t.end_time!.split(':').map(Number)
-    return { start: sh * 60 + sm, end: eh * 60 + em }
-  }).sort((a, b) => a.start - b.start)
-
-  const DAY_START = 360, DAY_END = 1080  // 6:00-18:00, 12h window
-  let occupied = 0, prevEnd = DAY_START
-  for (const slot of slots) {
-    const s = Math.max(slot.start, DAY_START)
-    const e = Math.min(slot.end, DAY_END)
-    if (s >= e) continue
-    if (s > prevEnd) { occupied += e - s; prevEnd = e }
-    else if (e > prevEnd) { occupied += e - prevEnd; prevEnd = e }
+    occupied += eh * 60 + em - (sh * 60 + sm)
   }
 
-  const freeMin = DAY_END - DAY_START - occupied
+  const freeMin = 600 - occupied
   if (freeMin >= 480) return '充裕'
   if (freeMin >= 240) return '较多'
   if (freeMin >= 120) return '适中'
@@ -240,7 +231,7 @@ watch(activeView, loadTasks)
       <span><span class="dot" style="background:var(--warning)"></span> 中优先级</span>
       <span><span class="dot" style="background:var(--primary)"></span> 低优先级</span>
       <span class="sep">|</span>
-      <span class="free-lbl">空闲(按12h):</span>
+      <span class="free-lbl">空闲(按10h):</span>
       <span><span class="badge-free">充裕</span> ≥8h</span>
       <span><span class="badge-free">较多</span> 4-8h</span>
       <span><span class="badge-free">适中</span> 2-4h</span>

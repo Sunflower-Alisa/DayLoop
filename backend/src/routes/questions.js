@@ -16,10 +16,6 @@ function getLinkedTasks(questionId) {
      ORDER BY t.date DESC, t.start_time`
   ).all(questionId);
   if (fromLinks.length > 0) return fromLinks;
-  const fromTasks = db.prepare(
-    `SELECT id, title, date, start_time, end_time, status, category FROM tasks WHERE question_id = ? ORDER BY date DESC, start_time`
-  ).all(questionId);
-  if (fromTasks.length > 0) return fromTasks;
   const q = db.prepare('SELECT task_id FROM questions WHERE id = ?').get(questionId);
   if (q && q.task_id) {
     const task = db.prepare(

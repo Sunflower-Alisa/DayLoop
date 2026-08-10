@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { provide, onMounted, ref } from 'vue'
+import { provide, onMounted, ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { api, setServerUrl, getServerUrl } from './api'
 import { auth } from './store/auth'
@@ -7,12 +7,18 @@ import { auth } from './store/auth'
 const router = useRouter()
 const showUpdateBanner = ref(false)
 
+const isFullscreen = computed(() => !!router.currentRoute.value.meta?.fullscreen)
+
 const sidebarOpen = ref(false)
 function toggleSidebar() { sidebarOpen.value = !sidebarOpen.value }
 function closeSidebar() { sidebarOpen.value = false }
 function navigateTo(name: string) {
   router.push({ name })
   closeSidebar()
+}
+
+function isActive(name: string) {
+  return router.currentRoute.value.name === name
 }
 
 const serverInfo = ref('检测中...')
@@ -145,16 +151,42 @@ function applyUpdate() {
   window.location.reload()
 }
 
-const coreNav = [
-  { name: 'home', label: '首页', icon: '🏠' },
-  { name: 'plan', label: '今日计划', icon: '📋' },
-  { name: 'notes', label: '备忘录', icon: '📝' },
-  { name: 'questions', label: '问题库', icon: '❓' },
-  { name: 'review', label: '复盘', icon: '📊' },
-  { name: 'summary', label: '总结', icon: '📑' },
-  { name: 'calendar', label: '日历预览', icon: '📅' },
-  { name: 'achievements', label: '成果', icon: '🏆' },
-  { name: 'statistics', label: '统计', icon: '📈' },
+const navGroups = [
+  {
+    title: '工作台',
+    items: [
+      { name: 'home', label: '今日概览', icon: '🏠' },
+    ],
+  },
+  {
+    title: '日程规划',
+    items: [
+      { name: 'plan', label: '今日计划', icon: '📋' },
+      { name: 'review', label: '每日复盘', icon: '📊' },
+      { name: 'summary', label: '总结', icon: '📑' },
+      { name: 'calendar', label: '日历预览', icon: '📅' },
+      { name: 'achievements', label: '成果', icon: '🏆' },
+      { name: 'statistics', label: '统计', icon: '📈' },
+    ],
+  },
+  {
+    title: '知识管理',
+    items: [
+      { name: 'notes', label: '备忘录', icon: '📝' },
+      { name: 'questions', label: '问题库', icon: '❓' },
+    ],
+  },
+  {
+    title: '英语学习',
+    items: [
+      { name: 'english', label: '英语学习', icon: '🇬🇧' },
+      { name: 'english-words', label: '单词背诵', icon: '🔤' },
+      { name: 'english-scenarios', label: '场景英语', icon: '💬' },
+      { name: 'english-speaking', label: '口语跟读', icon: '🎙️' },
+      { name: 'english-clips', label: '影视切片', icon: '🎬' },
+      { name: 'english-statistics', label: '学习统计', icon: '📈' },
+    ],
+  },
 ]
 
 onMounted(() => {
@@ -173,12 +205,12 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="app">
+  <div class="app" :class="{ fullscreen: isFullscreen }">
     <div v-if="showUpdateBanner" class="update-banner" @click="applyUpdate">
       🔄 新版本可用，点击刷新
     </div>
 
-    <div class="top-bar">
+    <div v-if="!isFullscreen" class="top-bar">
       <div class="top-bar-left">
         <button class="hamburger" @click="toggleSidebar" aria-label="菜单">
           <span class="hamburger-line"></span>
@@ -213,9 +245,15 @@ onMounted(() => {
         <button class="sidebar-close" @click="closeSidebar">✕</button>
       </div>
       <nav class="sidebar-nav">
-        <div class="sidebar-section">
-          <div class="sidebar-section-title">核心功能</div>
-          <button v-for="item in coreNav" :key="item.name" class="sidebar-item" @click="navigateTo(item.name)">
+        <div v-for="group in navGroups" :key="group.title" class="sidebar-section">
+          <div class="sidebar-section-title">{{ group.title }}</div>
+          <button
+            v-for="item in group.items"
+            :key="item.name"
+            class="sidebar-item"
+            :class="{ active: isActive(item.name) }"
+            @click="navigateTo(item.name)"
+          >
             <span class="sidebar-item-icon">{{ item.icon }}</span>
             <span>{{ item.label }}</span>
           </button>
@@ -594,6 +632,12 @@ body {
 
 .sidebar-item:hover {
   background: var(--bg);
+}
+
+.sidebar-item.active {
+  background: #eef2ff;
+  color: var(--primary);
+  font-weight: 600;
 }
 
 .sidebar-item-icon {
