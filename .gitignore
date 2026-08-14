@@ -19,3 +19,10 @@ query
 scripts/*.cjs
 scripts/*.zip
 nul
+ai-agent-service/src/.venv/
+ai-agent-service/src/__pycache__/
+ai-agent-service/src/app/perception/__pycache__/
+ai-agent-service/src/app/core/__pycache__/
+ai-agent-service/src/app/llm/__pycache__/
+.workbuddy/memory/2026-08-10.md
+ai-agent-service/src/app/context/__pycache__/

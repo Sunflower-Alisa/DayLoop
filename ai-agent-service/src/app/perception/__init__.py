@@ -1,6 +1,6 @@
-from app.preception.asr import ASR
-from app.preception.entity import Entity, EntityExtractor
-from app.preception.intent import (
+from app.perception.asr import ASR
+from app.perception.entity import Entity, EntityExtractor
+from app.perception.intent import (
     ALL_INTENTS,
     CONTEXT_REQUIREMENTS,
     INTENT_GENERAL_CHAT,
@@ -15,10 +15,10 @@ from app.preception.intent import (
     IntentDetector,
     IntentResult,
 )
-from app.preception.multimodal import MultimodalProcessor
-from app.preception.normalizer import normalize_text
-from app.preception.perception import PerceptionService
-from app.preception.result import PerceptionResult
+from app.perception.multimodal import MultimodalProcessor
+from app.perception.normalizer import normalize_text
+from app.perception.perception import PerceptionService
+from app.perception.result import PerceptionResult
 
 __all__ = [
     "ASR",

@@ -7,7 +7,7 @@ import os
 from app.core.config import settings
 from app.llm.client import LLMClient
 
-logger = logging.getLogger("agent-preception.multimodal")
+logger = logging.getLogger("agent-perception.multimodal")
 
 
 class MultimodalProcessor:

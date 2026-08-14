@@ -1,6 +1,6 @@
 # Perception 感知层
 
-`app/preception` 是 AI Agent 的感知层，对应 `docs/05-architecture.md` §17 Perception。
+`app/perception` 是 AI Agent 的感知层，对应 `docs/05-architecture.md` §17 Perception。
 
 ## 职责
 
@@ -69,7 +69,7 @@ $env:OPENAI_API_KEY = "sk-..."
 ### 2. 最小示例
 
 ```python
-from app.preception import PerceptionService
+from app.perception import PerceptionService
 
 svc = PerceptionService()
 
@@ -109,9 +109,9 @@ r.metadata["intent_method"]      # rule
 ### 5. 单独使用子模块
 
 ```python
-from app.preception.entity import EntityExtractor
-from app.preception.intent import IntentDetector
-from app.preception.normalizer import normalize_text
+from app.perception.entity import EntityExtractor
+from app.perception.intent import IntentDetector
+from app.perception.normalizer import normalize_text
 
 normalize_text("  帮我\n分析\n这个JD  ")          # "帮我 分析 这个JD"
 EntityExtractor().extract("工作地点：上海，技能：Python RAG")

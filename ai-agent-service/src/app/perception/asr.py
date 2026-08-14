@@ -5,7 +5,7 @@ import os
 
 from app.llm.client import LLMClient
 
-logger = logging.getLogger("agent-preception.asr")
+logger = logging.getLogger("agent-perception.asr")
 
 
 class ASR:

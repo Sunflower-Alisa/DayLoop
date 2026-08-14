@@ -2,14 +2,14 @@ from __future__ import annotations
 
 import logging
 
-from app.preception.asr import ASR
-from app.preception.entity import EntityExtractor
-from app.preception.intent import CONTEXT_REQUIREMENTS, IntentDetector
-from app.preception.multimodal import MultimodalProcessor
-from app.preception.normalizer import normalize_text
-from app.preception.result import PerceptionResult
+from app.perception.asr import ASR
+from app.perception.entity import EntityExtractor
+from app.perception.intent import CONTEXT_REQUIREMENTS, IntentDetector
+from app.perception.multimodal import MultimodalProcessor
+from app.perception.normalizer import normalize_text
+from app.perception.result import PerceptionResult
 
-logger = logging.getLogger("agent-preception")
+logger = logging.getLogger("agent-perception")
 
 
 # 意图 → 任务描述（简短，供日志/AgentState 使用）
