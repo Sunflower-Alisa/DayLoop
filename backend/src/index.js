@@ -24,6 +24,7 @@ const speakingRouter = require('./routes/speaking');
 const clipsRouter = require('./routes/clips');
 const englishRouter = require('./routes/english');
 const agentRouter = require('./routes/agent');
+const agentChatRouter = require('./routes/agent-chat');
 
 seed();
 
@@ -77,6 +78,7 @@ app.use('/api/speaking', speakingRouter);
 app.use('/api/clips', clipsRouter);
 app.use('/api/english', englishRouter);
 app.use('/api/v1/agent', agentRouter);
+app.use('/api/agent', agentChatRouter);
 
 app.use('/uploads', express.static(path.join(__dirname, '..', 'data', 'uploads')));
 app.use(express.static(path.join(__dirname, '..', '..', 'frontend', 'dist')));

@@ -265,5 +265,14 @@ export const api = {
 
   saveTaskSummary(title: string, content: string): Promise<TaskSummary> {
     return request(`/task-summaries/${encodeURIComponent(title)}`, { method: 'PUT', body: JSON.stringify({ content }) })
+  },
+
+  // ---- AI Agent 助手（经 DayLoop 后端同源代理转发）----
+  agentChat(message: string, session_id?: string): Promise<{ session_id: string; intent: string; message: string; metadata: Record<string, unknown> }> {
+    return request('/agent/chat', { method: 'POST', body: JSON.stringify({ message, session_id: session_id || '' }) })
+  },
+
+  agentStatus(): Promise<{ status: string; provider?: string }> {
+    return request('/agent/status')
   }
 }

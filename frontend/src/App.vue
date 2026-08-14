@@ -147,6 +147,7 @@ function applyUpdate() {
 
 const coreNav = [
   { name: 'home', label: '首页', icon: '🏠' },
+  { name: 'agent', label: 'AI 助手', icon: '🤖' },
   { name: 'plan', label: '今日计划', icon: '📋' },
   { name: 'notes', label: '备忘录', icon: '📝' },
   { name: 'questions', label: '问题库', icon: '❓' },

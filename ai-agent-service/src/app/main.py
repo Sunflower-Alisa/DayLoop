@@ -13,6 +13,13 @@ app = FastAPI(
     version="1.0.0",
 )
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 @app.on_event("startup")
 def _startup():
@@ -20,16 +27,6 @@ def _startup():
     from app.agents.bootstrap import build_router
 
     build_router()
-
-
-@app.on_event("startup")
-def _startup_cors():
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=["*"],
-        allow_methods=["*"],
-        allow_headers=["*"],
-    )
 
 
 from app.fastapi.middleware.request_logging import RequestLoggingMiddleware

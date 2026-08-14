@@ -33,6 +33,7 @@ import SpeakingPractice from '../views/english/SpeakingPractice.vue'
 import Clips from '../views/english/Clips.vue'
 import ClipDetail from '../views/english/ClipDetail.vue'
 import EnglishStatistics from '../views/english/EnglishStatistics.vue'
+import AgentChat from '../views/AgentChat.vue'
 
 const routes = [
   { path: '/login', name: 'login', component: Login, meta: { guest: true } },
@@ -71,6 +72,7 @@ const routes = [
   { path: '/english/clips', name: 'english-clips', component: Clips, meta: { auth: true } },
   { path: '/english/clips/:id', name: 'english-clip-detail', component: ClipDetail, meta: { auth: true } },
   { path: '/english/statistics', name: 'english-statistics', component: EnglishStatistics, meta: { auth: true } },
+  { path: '/agent', name: 'agent', component: AgentChat, meta: { auth: true } },
 ]
 
 const router = createRouter({
