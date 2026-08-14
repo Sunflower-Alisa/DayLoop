@@ -10,13 +10,13 @@
     "id": "tool_002",
     "tool": "get_resume",
     "input": "user_001",
-    "expected_ok": false
+    "expected_ok": true
   },
   {
     "id": "tool_003",
     "tool": "get_tasks",
     "input": "user_001",
-    "expected_ok": false
+    "expected_ok": true
   },
   {
     "id": "tool_004",

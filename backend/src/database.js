@@ -354,6 +354,91 @@ db.exec(`
     start_time REAL DEFAULT 0,
     end_time REAL DEFAULT 0
   );
+
+  -- ===== Agent Integration API（§9 求职/简历/知识数据）=====
+
+  CREATE TABLE IF NOT EXISTS user_profiles (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL UNIQUE,
+    name TEXT DEFAULT '',
+    title TEXT DEFAULT '',
+    bio TEXT DEFAULT '',
+    company TEXT DEFAULT '',
+    location TEXT DEFAULT '',
+    email TEXT DEFAULT '',
+    phone TEXT DEFAULT '',
+    github TEXT DEFAULT '',
+    linkedin TEXT DEFAULT '',
+    website TEXT DEFAULT '',
+    created_at TEXT DEFAULT (datetime('now','localtime')),
+    updated_at TEXT DEFAULT (datetime('now','localtime'))
+  );
+
+  CREATE TABLE IF NOT EXISTS resumes (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    content TEXT DEFAULT '',
+    version INTEGER DEFAULT 1,
+    created_at TEXT DEFAULT (datetime('now','localtime')),
+    updated_at TEXT DEFAULT (datetime('now','localtime'))
+  );
+
+  CREATE TABLE IF NOT EXISTS skills (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    skill TEXT NOT NULL,
+    level TEXT DEFAULT 'intermediate',
+    category TEXT DEFAULT '',
+    created_at TEXT DEFAULT (datetime('now','localtime')),
+    updated_at TEXT DEFAULT (datetime('now','localtime'))
+  );
+
+  CREATE TABLE IF NOT EXISTS jobs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    title TEXT DEFAULT '',
+    company TEXT DEFAULT '',
+    city TEXT DEFAULT '',
+    salary TEXT DEFAULT '',
+    url TEXT DEFAULT '',
+    description TEXT DEFAULT '',
+    requirements TEXT DEFAULT '',
+    skills TEXT DEFAULT '',
+    status TEXT DEFAULT 'saved',
+    source TEXT DEFAULT '',
+    created_at TEXT DEFAULT (datetime('now','localtime')),
+    updated_at TEXT DEFAULT (datetime('now','localtime'))
+  );
+
+  CREATE TABLE IF NOT EXISTS interview_sessions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    job_id INTEGER,
+    mode TEXT DEFAULT 'agent',
+    status TEXT DEFAULT 'in_progress',
+    created_at TEXT DEFAULT (datetime('now','localtime')),
+    finished_at TEXT
+  );
+
+  CREATE TABLE IF NOT EXISTS interview_answers (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    interview_id INTEGER NOT NULL,
+    question TEXT DEFAULT '',
+    answer TEXT DEFAULT '',
+    feedback TEXT DEFAULT '',
+    created_at TEXT DEFAULT (datetime('now','localtime'))
+  );
+
+  CREATE TABLE IF NOT EXISTS knowledge (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    title TEXT DEFAULT '',
+    content TEXT DEFAULT '',
+    category TEXT DEFAULT '',
+    source TEXT DEFAULT '',
+    created_at TEXT DEFAULT (datetime('now','localtime')),
+    updated_at TEXT DEFAULT (datetime('now','localtime'))
+  );
 `);
 
 module.exports = db;

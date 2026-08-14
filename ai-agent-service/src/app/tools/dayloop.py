@@ -10,7 +10,8 @@ from app.core.logging import get_logger
 logger = get_logger("tools.dayloop")
 
 # DayLoop Agent Integration API 基地址，可由环境变量覆盖（§8 / §9）
-DEFAULT_BASE_URL = os.getenv("DAYLOOP_API_BASE", "http://localhost:5174/api/v1/agent")
+# Node 主后端默认端口 3001；如启用 .NET 镜像后端则设为 http://localhost:5000/api/v1/agent
+DEFAULT_BASE_URL = os.getenv("DAYLOOP_API_BASE", "http://localhost:3001/api/v1/agent")
 # 服务间认证（§43 Service Token）
 SERVICE_TOKEN = os.getenv("DAYLOOP_SERVICE_TOKEN", "")
 TIMEOUT = float(os.getenv("DAYLOOP_API_TIMEOUT", "5"))

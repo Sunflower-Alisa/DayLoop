@@ -57,9 +57,9 @@ OPENAI_API_KEY=sk-xxx
 WEB_SEARCH_PROVIDER=bing
 # TAVILY_API_KEY=xxx   SERPAPI_KEY=xxx   BING_SEARCH_KEY=xxx
 
-# DayLoop Agent Integration API（§9）
-DAYLOOP_API_BASE=http://localhost:5174/api/v1/agent
-DAYLOOP_SERVICE_TOKEN=xxx
+# DayLoop Agent Integration API（§9，Node 主后端端口 3001）
+DAYLOOP_API_BASE=http://localhost:3001/api/v1/agent
+DAYLOOP_SERVICE_TOKEN=DayLoop-Agent-Service-Token-2026
 
 # 运行时产物目录（默认落在 src 下，已加入 .gitignore）
 # CHROMA_PERSIST_DIR=.chroma   MEMORY_DIR=.memory
