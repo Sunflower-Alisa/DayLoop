@@ -1,0 +1,46 @@
+{
+  "documents": [
+    {
+      "id": "doc_rag",
+      "text": "RAG 检索增强生成 是一种结合检索与生成的技术，通过 Retriever 召回相关知识片段，再交给 LLM 生成回答。常见模块有 Splitter 切分、Embedding 向量化、Rerank 重排、Overlap 重叠上下文。"
+    },
+    {
+      "id": "doc_agent",
+      "text": "Agent 智能体 通过 Planner 制定计划，Executor 调用工具执行，Decision 判断继续或结束，Reflection 进行反思，形成完整的 Agent 循环。工具调用 Tool Calling 是 Agent 与环境交互的关键。"
+    },
+    {
+      "id": "doc_memory",
+      "text": "长期记忆 LongTermMemory 以 JSON 文件持久化用户画像与偏好，短期记忆 ShortTermMemory 保存最近对话，语义记忆 SemanticMemory 通过向量检索召回相关记忆。"
+    },
+    {
+      "id": "doc_interview",
+      "text": "模拟面试 Mock Interview 由面试官 Agent 提问，根据回答评估分数并动态调整难度，最后生成总结报告并更新技能画像。"
+    }
+  ],
+  "queries": [
+    {
+      "id": "q_rag",
+      "query": "什么是 RAG 检索增强生成",
+      "expected_ids": ["doc_rag"],
+      "top_k": 3
+    },
+    {
+      "id": "q_agent",
+      "query": "Agent 循环 Planner Executor 工具调用",
+      "expected_ids": ["doc_agent"],
+      "top_k": 3
+    },
+    {
+      "id": "q_memory",
+      "query": "长期记忆 用户画像 持久化",
+      "expected_ids": ["doc_memory"],
+      "top_k": 3
+    },
+    {
+      "id": "q_interview",
+      "query": "模拟面试 评估 总结报告",
+      "expected_ids": ["doc_interview"],
+      "top_k": 3
+    }
+  ]
+}

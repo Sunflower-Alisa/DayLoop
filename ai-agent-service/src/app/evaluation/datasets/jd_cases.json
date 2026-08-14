@@ -1,0 +1,41 @@
+[
+  {
+    "id": "jd_001",
+    "jd": "AI Agent 应用开发工程师\n岗位职责：负责基于 LangGraph 与 RAG 的 AI Agent 应用开发，参与大模型 LLM 应用落地。\n任职要求：3年以上Python开发经验，熟悉 LangChain、FastAPI、Tool Calling。本科以上学历。\n工作地点：北京，薪资 25k-45k。",
+    "expected": {
+      "job_title": "AI Agent 应用开发",
+      "city": "北京",
+      "salary": "25k-45k",
+      "experience": "3年以上Python开发经验，熟悉 LangChain、FastAPI、Tool Calling。本科以上",
+      "education": "本科",
+      "jd_type": "AI Agent应用开发",
+      "skills": ["Python", "LLM", "RAG", "Agent", "LangGraph", "LangChain", "FastAPI", "Tool Calling"]
+    }
+  },
+  {
+    "id": "jd_002",
+    "jd": "AI 产品经理\n岗位职责：负责 AI 产品规划、需求分析与客户交付，协同算法与工程团队推进 LLM 大模型应用落地。\n任职要求：3年产品经理经验，熟悉 Agent 产品方案与 Prompt Engineering。本科以上学历。\n工作地点：上海，薪资 20k-35k。",
+    "expected": {
+      "job_title": "AI 产品经理",
+      "city": "上海",
+      "salary": "20k-35k",
+      "experience": "3年产品经理经验，熟悉 Agent 产品方案与 Prompt Engineering。本科以上",
+      "education": "本科",
+      "jd_type": "AI产品经理",
+      "skills": ["LLM", "Agent", "Prompt Engineering"]
+    }
+  },
+  {
+    "id": "jd_003",
+    "jd": "FDE（前向交付工程师）\n岗位职责：负责客户前向交付、技术对接与现场问题跟进。\n任职要求：2年以上相关经验，熟悉 RAG、LangGraph 与向量数据库。不限学历。\n工作地点：远程，薪资 面议。",
+    "expected": {
+      "job_title": "FDE",
+      "city": "远程",
+      "salary": "面议",
+      "experience": "2年以上相关经验",
+      "education": "不限学历",
+      "jd_type": "FDE",
+      "skills": ["RAG", "LangGraph", "向量数据库"]
+    }
+  }
+]

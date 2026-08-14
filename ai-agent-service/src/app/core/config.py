@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import os
 
+from app.core.exceptions import ConfigError
+
 PROVIDER = os.getenv("LLM_PROVIDER", "deepseek")
 
 PROVIDERS = {
@@ -20,7 +22,7 @@ PROVIDERS = {
 }
 
 if PROVIDER not in PROVIDERS:
-    raise ValueError(f"未知 LLM 提供商: {PROVIDER}，可选: {', '.join(PROVIDERS)}")
+    raise ConfigError(f"未知 LLM 提供商: {PROVIDER}，可选: {', '.join(PROVIDERS)}")
 
 
 class Settings:
@@ -33,13 +35,13 @@ class Settings:
         """
         name = provider or PROVIDER
         if name not in PROVIDERS:
-            raise ValueError(f"未知 LLM 提供商: {name}，可选: {', '.join(PROVIDERS)}")
+            raise ConfigError(f"未知 LLM 提供商: {name}，可选: {', '.join(PROVIDERS)}")
         return dict(PROVIDERS[name])
 
     def require_api_key(self, cfg: dict) -> None:
         """校验 API key，缺失时给出明确错误（在真正要调用大模型时才检查）。"""
         if not cfg.get("api_key"):
-            raise RuntimeError(
+            raise ConfigError(
                 f"LLM 未配置 API key（{cfg.get('api_key_env')}），"
                 "请设置对应环境变量后再调用大模型"
             )

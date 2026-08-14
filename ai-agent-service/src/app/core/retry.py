@@ -1,9 +1,10 @@
 import functools
-import logging
 import random
 import time
 
-logger = logging.getLogger("agent-core.retry")
+from app.core.logging import get_logger
+
+logger = get_logger("core.retry")
 
 
 def retry(max_times: int = 3, base_delay: float = 1.0, jitter: bool = True):

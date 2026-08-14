@@ -1,0 +1,28 @@
+[
+  {
+    "id": "tool_001",
+    "tool": "jd_parser",
+    "input": "AI Agent 应用开发工程师\n岗位职责：负责基于 LangGraph 与 RAG 的 AI Agent 应用开发。\n任职要求：3年以上Python开发经验，本科以上学历。\n工作地点：北京，薪资 25k-45k。",
+    "expected_ok": true,
+    "expected_skills": ["Python", "RAG", "Agent", "LangGraph"]
+  },
+  {
+    "id": "tool_002",
+    "tool": "get_resume",
+    "input": "user_001",
+    "expected_ok": false
+  },
+  {
+    "id": "tool_003",
+    "tool": "get_tasks",
+    "input": "user_001",
+    "expected_ok": false
+  },
+  {
+    "id": "tool_004",
+    "tool": "web_search",
+    "input": "AI Agent 大模型 行业动态",
+    "expected_ok": true,
+    "expected_results_min": 1
+  }
+]

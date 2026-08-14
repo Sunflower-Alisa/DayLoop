@@ -1,0 +1,9 @@
+llm:
+  provider: deepseek
+  model: deepseek-v4-flash
+memory:
+  short_term_turns: 10
+  long_term_db: "data/memory.db"
+rag:
+  embedding_model: "bge-small-zh-v1.5"
+  top_k: 5

@@ -1,13 +1,13 @@
 from __future__ import annotations
 
 import base64
-import logging
 import os
 
-from app.core.config import settings
+from app.core.exceptions import PerceptionError
+from app.core.logging import get_logger
 from app.llm.client import LLMClient
 
-logger = logging.getLogger("agent-perception.multimodal")
+logger = get_logger("perception.multimodal")
 
 
 class MultimodalProcessor:
@@ -25,7 +25,7 @@ class MultimodalProcessor:
         }
         """
         if not image_path or not os.path.exists(image_path):
-            raise FileNotFoundError(f"图片文件不存在: {image_path}")
+            raise PerceptionError(f"图片文件不存在: {image_path}")
 
         extension = os.path.splitext(image_path)[1].lower() or ".png"
         mime = {

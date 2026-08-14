@@ -1,0 +1,29 @@
+[
+  {
+    "id": "memory_001",
+    "save": {
+      "type": "preference",
+      "content": "我目标岗位是 AI Agent 应用开发，熟悉 Python 和 RAG。"
+    },
+    "query": "目标岗位",
+    "expected": "AI Agent 应用开发"
+  },
+  {
+    "id": "memory_002",
+    "save": {
+      "type": "skill",
+      "content": "最近完成了基于 LangGraph 的多 Agent 项目。"
+    },
+    "query": "LangGraph",
+    "expected": "LangGraph"
+  },
+  {
+    "id": "memory_003",
+    "save": {
+      "type": "interview",
+      "content": "面试中答错的题目：RAG 检索为什么需要 Overlap。"
+    },
+    "query": "面试",
+    "expected": "Overlap"
+  }
+]

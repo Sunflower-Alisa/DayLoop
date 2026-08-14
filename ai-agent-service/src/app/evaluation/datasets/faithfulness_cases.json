@@ -1,0 +1,20 @@
+[
+  {
+    "id": "faithfulness_001",
+    "context": "RAG 全称 Retrieval-Augmented Generation，检索增强生成。它先把知识库文档切分成 Chunk 并向量化存储，用户提问时用向量检索召回最相关的片段，再把这些片段拼进 Prompt 交给 LLM 生成回答。",
+    "answer": "RAG 通过先检索相关文档片段、再让 LLM 基于片段生成回答，来减少幻觉并利用外部知识。",
+    "evaluation": "llm_judge"
+  },
+  {
+    "id": "faithfulness_002",
+    "context": "LangGraph 是 LangChain 推出的 Agent 编排框架，支持把多个节点组成图，节点间可以有条件和循环边，适合实现带反思和工具调用的复杂 Agent 流程。",
+    "answer": "LangGraph 允许把 Agent 步骤组织成图结构，并支持条件分支与循环，因此很适合实现反思与工具调用类流程。",
+    "evaluation": "llm_judge"
+  },
+  {
+    "id": "faithfulness_003",
+    "context": "Chroma 是一个开源向量数据库，支持持久化存储与余弦相似度检索，适合做中小规模 RAG 的 Embedding 索引。",
+    "answer": "Chroma 可以把知识切块后向量化并持久化，供 RAG 检索使用，是轻量的向量数据库选择。",
+    "evaluation": "llm_judge"
+  }
+]

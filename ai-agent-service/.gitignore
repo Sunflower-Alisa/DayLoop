@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Agent runtime artifacts
+.chroma/
+.memory/
+data/
+logs/
+
+# Evaluation generated reports
+src/app/evaluation/reports/
+
+# Env / secrets
+.env
+.env.*
+!.env.example
+
+# IDE
+.idea/
+.vscode/

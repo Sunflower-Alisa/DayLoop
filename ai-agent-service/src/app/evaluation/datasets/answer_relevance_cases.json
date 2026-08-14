@@ -1,0 +1,20 @@
+[
+  {
+    "id": "relevance_001",
+    "question": "RAG 为什么能减少 LLM 幻觉？",
+    "answer": "因为 RAG 会先从知识库检索与问题相关的文档片段，再把它们作为上下文交给 LLM，模型基于事实材料作答，而不是仅凭训练数据自由发挥。",
+    "evaluation": "llm_judge"
+  },
+  {
+    "id": "relevance_002",
+    "question": "LangGraph 和 LangChain 的关系是什么？",
+    "answer": "LangGraph 是 LangChain 生态中的 Agent 编排框架，LangChain 提供组件（模型、检索、工具），LangGraph 把这些组件组织成带条件边和循环的图执行流程。",
+    "evaluation": "llm_judge"
+  },
+  {
+    "id": "relevance_003",
+    "question": "Embedding 模型和向量数据库分别起什么作用？",
+    "answer": "Embedding 模型把文本转成高维向量以表达语义，向量数据库负责存储这些向量并提供相似度检索，二者配合完成 RAG 的召回。",
+    "evaluation": "llm_judge"
+  }
+]

@@ -1,7 +1,8 @@
 import functools
-import logging
 
-logger = logging.getLogger("agent-core.error")
+from app.core.logging import get_logger
+
+logger = get_logger("core.error")
 
 
 def safe_node(fallback=None):

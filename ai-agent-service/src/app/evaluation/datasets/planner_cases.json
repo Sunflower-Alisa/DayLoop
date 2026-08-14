@@ -1,0 +1,10 @@
+[
+  {"id": "planner_001", "intent": "JD_ANALYSIS", "expected_steps": 5, "expected_first": "解析 JD"},
+  {"id": "planner_002", "intent": "SKILL_GAP", "expected_steps": 5, "expected_first": "提取用户技能"},
+  {"id": "planner_003", "intent": "MOCK_INTERVIEW", "expected_steps": 3, "expected_first": "生成面试计划"},
+  {"id": "planner_004", "intent": "INDUSTRY_INFO", "expected_steps": 3, "expected_first": "确定关注范围"},
+  {"id": "planner_005", "intent": "JOB_SEARCH", "expected_steps": 4, "expected_first": "读取求职画像"},
+  {"id": "planner_006", "intent": "INTERVIEW_KNOWLEDGE", "expected_steps": 3, "expected_first": "获取素材"},
+  {"id": "planner_007", "intent": "RESUME_UPDATE", "expected_steps": 3, "expected_first": "读取简历"},
+  {"id": "planner_008", "intent": "TASK_MANAGEMENT", "expected_steps": 2, "expected_first": "解析意图"}
+]

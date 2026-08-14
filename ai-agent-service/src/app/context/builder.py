@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import logging
 from typing import Any
 
 from app.context.provider import ContextProvider, ProviderRegistry
@@ -11,9 +10,10 @@ from app.context.schema import (
     AgentContext,
     ContextBlock,
 )
+from app.core.logging import get_logger
 from app.perception.result import PerceptionResult
 
-logger = logging.getLogger("agent-context.builder")
+logger = get_logger("context.builder")
 
 # 意图 → 上下文需求（与 perception/intent.py 的 CONTEXT_REQUIREMENTS 一致）
 # 设计上不内置 onClick 处理，而是按需加载。

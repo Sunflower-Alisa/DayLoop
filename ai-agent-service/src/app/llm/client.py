@@ -4,7 +4,11 @@ import os
 
 from openai import OpenAI
 from app.core.config import settings
+from app.core.exceptions import ConfigError, LLMError
+from app.core.logging import get_logger
 from app.core.retry import retry
+
+logger = get_logger("llm.client")
 
 # token 统计（供 offline evaluation 使用）
 _token_stats = {"calls": 0, "input_tokens": 0, "output_tokens": 0}
@@ -47,11 +51,16 @@ class LLMClient:
         else:
             raise ValueError("chat: 需要提供 prompt 或 messages")
 
-        response = self.client.chat.completions.create(
-            model=self.model,
-            messages=msgs,
-            temperature=temperature,
-        )
+        try:
+            response = self.client.chat.completions.create(
+                model=self.model,
+                messages=msgs,
+                temperature=temperature,
+            )
+        except Exception as exc:
+            logger.warning("LLM chat 调用失败: %s", exc)
+            raise LLMError(f"LLM chat 调用失败: {self.model}", cause=exc) from exc
+
         usage = getattr(response, "usage", None)
         if usage is not None:
             _token_stats["calls"] += 1
@@ -79,14 +88,17 @@ class LLMClient:
         api_key = os.getenv("OPENAI_API_KEY")
         base_url = os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1")
         if not api_key:
-            raise RuntimeError("audio_transcribe 需要设置 OPENAI_API_KEY 环境变量")
+            raise LLMError("audio_transcribe 需要设置 OPENAI_API_KEY 环境变量")
 
         client = OpenAI(api_key=api_key, base_url=base_url)
         with open(audio_path, "rb") as f:
-            transcription = client.audio.transcriptions.create(
-                model="whisper-1",
-                file=f,
-                response_format="text",
-            )
+            try:
+                transcription = client.audio.transcriptions.create(
+                    model="whisper-1",
+                    file=f,
+                    response_format="text",
+                )
+            except Exception as exc:
+                raise LLMError("audio_transcribe 调用失败", cause=exc) from exc
         text = transcription if isinstance(transcription, str) else getattr(transcription, "text", "")
         return text.strip()

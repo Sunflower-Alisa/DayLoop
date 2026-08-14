@@ -1,10 +1,11 @@
 from __future__ import annotations
 
-import logging
 import re
 from dataclasses import dataclass, field
 
-logger = logging.getLogger("agent-perception.intent")
+from app.core.logging import get_logger
+
+logger = get_logger("perception.intent")
 
 # ===== 意图常量（与 docs/05-architecture.md §18 Intent Router 对齐） =====
 INTENT_INDUSTRY_INFO = "INDUSTRY_INFO"            # UC01 AI行业信息

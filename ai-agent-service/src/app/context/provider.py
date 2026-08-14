@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-import logging
 from abc import ABC, abstractmethod
 from typing import Any
 
 from app.context.schema import ContextBlock
+from app.core.logging import get_logger
 
-logger = logging.getLogger("agent-context.provider")
+logger = get_logger("context.provider")
 
 
 class ContextProvider(ABC):

@@ -1,0 +1,71 @@
+[
+  {
+    "id": "agent_jd_analysis",
+    "intent": "JD_ANALYSIS",
+    "input": "AI Agent 应用开发工程师\n岗位职责：负责基于 LangGraph 与 RAG 的 AI Agent 应用开发。\n任职要求：3年以上Python开发经验，熟悉 LangChain、FastAPI。本科以上学历。\n工作地点：北京，薪资 25k-45k。",
+    "state": {
+      "skill_profile": {"skills": ["Python", "RAG", "LangGraph", "FastAPI"]},
+      "resume": "3 年 Python 后端经验，做过 RAG 项目。"
+    },
+    "expect": {"field": "final_answer", "non_empty": true, "contains": ["匹配度"]}
+  },
+  {
+    "id": "agent_skill_gap",
+    "intent": "SKILL_GAP",
+    "input": "AI Agent 应用开发工程师\n任职要求：熟悉 RAG、LangGraph、MCP，3年以上经验。",
+    "state": {
+      "skill_profile": {"skills": ["Python", "RAG"]},
+      "resume": "Python 开发，了解 RAG。"
+    },
+    "expect": {"field": "final_answer", "non_empty": true, "contains": ["未掌握", "学习建议"]}
+  },
+  {
+    "id": "agent_interview_knowledge",
+    "intent": "INTERVIEW_KNOWLEDGE",
+    "input": "今天面试聊了 RAG 的 chunk overlap 和 Embedding 的作用，还问到了 Agent 的 Tool Calling。",
+    "state": {},
+    "expect": {"field": "final_answer", "non_empty": true, "contains": []}
+  },
+  {
+    "id": "agent_industry_info",
+    "intent": "INDUSTRY_INFO",
+    "input": "给我一份今天的 AI 行业日报。",
+    "state": {},
+    "expect": {"field": "final_answer", "non_empty": true, "contains": []}
+  },
+  {
+    "id": "agent_general_chat",
+    "intent": "GENERAL_CHAT",
+    "input": "你好，介绍一下你能做什么？",
+    "state": {},
+    "expect": {"field": "final_answer", "non_empty": true, "contains": []}
+  },
+  {
+    "id": "agent_job_search",
+    "intent": "JOB_SEARCH",
+    "input": "帮我找 AI 岗位",
+    "state": {"skill_profile": {"skills": ["Python", "RAG"]}},
+    "expect": {"field": "final_answer", "non_empty": true, "contains": []}
+  },
+  {
+    "id": "agent_resume_update",
+    "intent": "RESUME_UPDATE",
+    "input": "帮我更新简历，突出 LangGraph 项目经验。",
+    "state": {"resume": "Python 工程师，做过 RAG。"},
+    "expect": {"field": "final_answer", "non_empty": true, "contains": []}
+  },
+  {
+    "id": "agent_task_management",
+    "intent": "TASK_MANAGEMENT",
+    "input": "帮我创建任务：今天学习 RAG 优化",
+    "state": {},
+    "expect": {"field": "final_answer", "non_empty": true, "contains": []}
+  },
+  {
+    "id": "agent_mock_interview",
+    "intent": "MOCK_INTERVIEW",
+    "input": "开始模拟面试",
+    "state": {"skill_profile": {"skills": [{"name": "Python", "level": "熟练"}, {"name": "RAG", "level": "熟悉"}]}},
+    "expect": {"field": "final_answer", "non_empty": true, "contains": ["面试官"]}
+  }
+]

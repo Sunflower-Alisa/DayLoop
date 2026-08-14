@@ -1,0 +1,10 @@
+fastapi>=0.128
+uvicorn>=0.39
+openai>=2.48
+langgraph>=0.6
+langchain>=0.3
+chromadb>=0.6
+httpx>=0.28
+pydantic>=2.13
+numpy>=2.0
+pypdf>=6.15

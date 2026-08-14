@@ -1,12 +1,11 @@
 from __future__ import annotations
 
-import logging
-
 from app.context.builder import ContextBuilder
 from app.context.schema import AgentContext, ContextBlock
+from app.core.logging import get_logger
 from app.perception.result import PerceptionResult
 
-logger = logging.getLogger("agent-context.manager")
+logger = get_logger("context.manager")
 
 
 class ContextManager:

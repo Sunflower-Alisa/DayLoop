@@ -1,0 +1,23 @@
+[
+  {
+    "id": "interview_001",
+    "question": "请解释 RAG 中 Chunk 为什么需要 Overlap。",
+    "expected_answer": "Overlap 保证相邻 chunk 之间的上下文连续，避免语义在切分点断裂；检索时召回的相关信息更完整，从而提高生成质量。",
+    "answer": "Chunk 需要 Overlap 是因为切分后相邻片段要有重叠，这样边界上下文不会丢失，检索召回更完整，生成更准确。",
+    "evaluation": "llm_judge"
+  },
+  {
+    "id": "interview_002",
+    "question": "Agent 中 Tool Calling 的作用是什么？",
+    "expected_answer": "Tool Calling 让 Agent 能调用外部工具（检索、API、计算等），把 LLM 的推理能力延伸到真实世界，获取更准确的信息并完成具体任务。",
+    "answer": "Tool Calling 允许 Agent 调用外部工具，这样它不只能生成文本，还能查数据库、调接口，完成任务。",
+    "evaluation": "llm_judge"
+  },
+  {
+    "id": "interview_003",
+    "question": "LLM 为什么会有幻觉？如何缓解？",
+    "expected_answer": "幻觉源于训练数据的统计偏差与生成概率采样，缺乏真实依据。缓解手段包括 RAG 检索增强、减少温度采样、约束输出格式、设置置信度与引用等。",
+    "answer": "幻觉是因为模型在编造。可以用 RAG 让它基于检索到的知识回答，同时降低温度。",
+    "evaluation": "llm_judge"
+  }
+]
