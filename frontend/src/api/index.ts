@@ -1,4 +1,4 @@
-import type { Task, DailyReview, RecurringTemplate, Note, Question, Summary, TaskSummary } from '../types'
+import type { Task, DailyReview, RecurringTemplate, Note, Question, Summary, TaskSummary, StatsResponse } from '../types'
 import { auth } from '../store/auth'
 
 function getBase(): string {
@@ -235,17 +235,7 @@ export const api = {
     return request('/settings/sync-all', { method: 'POST' })
   },
 
-  getStats(): Promise<{
-    totalTasks: number
-    completedTasks: number
-    cancelledTasks: number
-    inProgressTasks: number
-    plannedTasks: number
-    completionRate: number
-    totalNotes: number
-    totalReviews: number
-    weeklyStats: { week: string; total: number; completed: number }[]
-  }> {
+  getStats(): Promise<StatsResponse> {
     return request('/stats')
   },
 
@@ -274,6 +264,6 @@ export const api = {
   },
 
   saveTaskSummary(title: string, content: string): Promise<TaskSummary> {
-    return request('/task-summaries', { method: 'PUT', body: JSON.stringify({ title, content }) })
+    return request(`/task-summaries/${encodeURIComponent(title)}`, { method: 'PUT', body: JSON.stringify({ content }) })
   }
 }

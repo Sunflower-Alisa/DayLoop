@@ -9,23 +9,17 @@ const isQuestionMode = computed(() => route.name === 'question-categories')
 
 const noteCategories = ref<string[]>([])
 const questionCategories = ref<string[]>([])
-const taskCategories = ref<string[]>([])
 const newNoteCat = ref('')
 const newQuestionCat = ref('')
-const newTaskCat = ref('')
 
 onMounted(async () => {
   try {
     if (isQuestionMode.value) {
       questionCategories.value = await api.getQuestionCategories()
     } else {
-      const [noteCats] = await Promise.all([api.getNoteCategories()])
-      noteCategories.value = noteCats
-      const allTasks = await api.getTasks()
-      const taskCats = new Set(allTasks.map(t => t.category).filter(Boolean))
-      taskCategories.value = Array.from(taskCats).sort()
+      noteCategories.value = await api.getNoteCategories()
     }
-  } catch (e) {
+  } catch (e: any) {
     console.error('加载分类失败', e)
   }
 })
@@ -38,7 +32,7 @@ async function addNoteCategory() {
     noteCategories.value.push(cat)
     noteCategories.value.sort()
     newNoteCat.value = ''
-  } catch (e) {
+  } catch (e: any) {
     alert('添加分类失败: ' + (e.message || e))
   }
 }
@@ -48,7 +42,7 @@ async function removeNoteCategory(cat: string) {
   try {
     await api.deleteNoteCategory(cat)
     noteCategories.value = noteCategories.value.filter(c => c !== cat)
-  } catch (e) {
+  } catch (e: any) {
     alert('删除分类失败: ' + (e.message || e))
   }
 }
@@ -61,7 +55,7 @@ async function addQuestionCategory() {
     questionCategories.value.push(cat)
     questionCategories.value.sort()
     newQuestionCat.value = ''
-  } catch (e) {
+  } catch (e: any) {
     alert('添加分类失败: ' + (e.message || e))
   }
 }
@@ -71,7 +65,7 @@ async function removeQuestionCategory(cat: string) {
   try {
     await api.deleteQuestionCategory(cat)
     questionCategories.value = questionCategories.value.filter(c => c !== cat)
-  } catch (e) {
+  } catch (e: any) {
     alert('删除分类失败: ' + (e.message || e))
   }
 }
@@ -143,7 +137,7 @@ async function removeQuestionCategory(cat: string) {
   background: var(--card);
   border-radius: var(--radius);
   padding: 16px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  box-shadow: var(--shadow-sm);
 }
 
 .cat-section h3 {

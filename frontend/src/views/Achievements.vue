@@ -3,7 +3,7 @@ import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { api } from '../api'
 import type { Task } from '../types'
-import { formatDate } from '../utils/format'
+import { formatDate, renderContent } from '../utils/format'
 
 const router = useRouter()
 const tasks = ref<Task[]>([])
@@ -45,11 +45,6 @@ async function filterByCategory(cat: string) {
 function truncate(text: string, len: number): string {
   if (text.length <= len) return text
   return text.slice(0, len) + '...'
-}
-
-function renderContent(text: string): string {
-  return text.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" style="max-width:100%;border-radius:8px;margin:8px 0">')
-    .replace(/\n/g, '<br>')
 }
 </script>
 

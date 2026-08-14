@@ -94,7 +94,10 @@ async function confirmComplete() {
     task.achievement = completionForm.value.achievement
     task.note = completionForm.value.note
     task.actual_duration = completionForm.value.actual_duration
+    task.actual_start = completionForm.value.actual_start || null
+    task.actual_end = completionForm.value.actual_end || null
     task.sync_enabled = completionForm.value.sync_enabled
+    task.status = 'completed'
     showCompleteDialog.value = false
     completingTask.value = null
   } catch (e) {
@@ -143,19 +146,23 @@ async function onImageSelected(e: Event) {
   const file = input.files?.[0]
   if (!file) return
   uploadingImage.value = true
-  try {
-    const reader = new FileReader()
-    reader.onload = async () => {
-      const dataUrl = reader.result as string
+  const reader = new FileReader()
+  reader.onload = async () => {
+    const dataUrl = reader.result as string
+    try {
       const result = await api.uploadImage(dataUrl)
       completionForm.value.achievement += `\n![image](${result.url})`
+    } catch (uploadErr) {
+      alert('图片上传失败: ' + (uploadErr instanceof Error ? uploadErr.message : '未知错误'))
+    } finally {
       uploadingImage.value = false
     }
-    reader.onerror = () => { uploadingImage.value = false }
-    reader.readAsDataURL(file)
-  } catch (e) {
-    uploadingImage.value = false
   }
+  reader.onerror = () => { 
+    alert('图片读取失败')
+    uploadingImage.value = false 
+  }
+  reader.readAsDataURL(file)
   input.value = ''
 }
 

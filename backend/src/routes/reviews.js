@@ -21,6 +21,7 @@ router.get('/', (req, res) => {
 router.put('/:date', (req, res) => {
   const { date } = req.params;
   const { content } = req.body;
+  if (content === undefined) return res.status(400).json({ error: 'content is required' });
   const userId = getUserId(req) || 0;
   const existing = db.prepare('SELECT * FROM daily_reviews WHERE user_id = ? AND date = ?').get(userId, date);
   if (existing) {

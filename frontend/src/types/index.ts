@@ -20,6 +20,7 @@ export interface Task {
   sync_enabled: boolean
   planned_days: number
   overall_status: 'pending' | 'completed'
+  tags: string
   created_at: string
   updated_at: string
 }

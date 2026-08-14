@@ -3,7 +3,7 @@ import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { api } from '../api'
 import type { Note } from '../types'
-import { formatDate } from '../utils/format'
+import { formatDate, renderContent } from '../utils/format'
 
 const route = useRoute()
 const router = useRouter()
@@ -65,7 +65,7 @@ async function insertImage() {
         form.value.content += markdown
         extractImages(form.value.content)
       } catch (err) {
-        alert('图片上传失败: ' + err.message)
+        alert('图片上传失败: ' + (err instanceof Error ? err.message : '未知错误'))
       } finally {
         uploading.value = false
       }
@@ -106,9 +106,8 @@ function statusLabel(s: string): string {
   return map[s] || s
 }
 
-function formatContent(text: string): string {
-  return text.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" style="max-width:100%;border-radius:8px;margin:8px 0">')
-    .replace(/\n/g, '<br>')
+function previewImage(url: string) {
+  window.open(url, '_blank')
 }
 </script>
 
@@ -145,7 +144,7 @@ function formatContent(text: string): string {
           <button class="toolbar-btn" @click="previewMode = !previewMode">{{ previewMode ? '✏️ 编辑' : '👁️ 预览' }}</button>
         </div>
         <textarea v-if="!previewMode" v-model="form.content" placeholder="输入备忘录内容，支持插入图片" rows="12"></textarea>
-        <div v-else class="preview-content" v-html="formatContent(form.content)"></div>
+        <div v-else class="preview-content" v-html="renderContent(form.content)"></div>
       </div>
 
       <div v-if="images.length > 0 && !previewMode" class="image-gallery">

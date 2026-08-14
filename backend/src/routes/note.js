@@ -142,6 +142,10 @@ router.put('/:id', (req, res) => {
 router.delete('/:id', (req, res) => {
   const { id } = req.params;
   const userId = getUserId(req) || 0;
+  // Verify ownership before modifying data
+  const note = db.prepare('SELECT id, user_id FROM notes WHERE id = ? AND user_id = ?').get(id, userId);
+  if (!note) return res.status(404).json({ error: 'Note not found' });
+  
   const linked = db.prepare('SELECT task_id FROM note_task_links WHERE note_id = ?').all(id);
   for (const l of linked) {
     db.prepare('UPDATE tasks SET note_id = NULL WHERE id = ?').run(l.task_id);

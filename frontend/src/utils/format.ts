@@ -6,6 +6,16 @@ export function formatDate(dateStr: string): string {
   return `${dateStr} (${wd})`
 }
 
+/** XSS-safe content rendering: escapes HTML, then unescapes markdown images */
+export function renderContent(text: string): string {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" style="max-width:100%;border-radius:8px;margin:8px 0">')
+    .replace(/\n/g, '<br>')
+}
+
 export function renderMarkdown(text: string): string {
   let html = text
     .replace(/^## (.+)$/gm, '<h2>$1</h2>')

@@ -3,7 +3,7 @@ import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { api } from '../api'
 import type { Task } from '../types'
-import { formatDate } from '../utils/format'
+import { formatDate, renderContent } from '../utils/format'
 
 const route = useRoute()
 const router = useRouter()
@@ -24,11 +24,6 @@ function formatDuration(min: number): string {
   if (!min) return ''
   if (min < 60) return `${min}分钟`
   return `${Math.floor(min / 60)}小时${min % 60 ? min % 60 + '分钟' : ''}`
-}
-
-function renderContent(text: string): string {
-  return text.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" style="max-width:100%;border-radius:8px;margin:8px 0">')
-    .replace(/\n/g, '<br>')
 }
 </script>
 

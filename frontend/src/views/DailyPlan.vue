@@ -3,7 +3,7 @@ import { ref, onMounted, inject, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { api } from '../api'
 import type { Task, Note } from '../types'
-import { formatDate } from '../utils/format'
+import { formatDate, renderContent } from '../utils/format'
 
 const route = useRoute()
 const router = useRouter()
@@ -32,6 +32,7 @@ const form = ref({
   is_planned: true,
   note_id: null as number | null,
   sync_enabled: true,
+  planned_days: 1,
 })
 
 const completeForm = ref({
@@ -46,11 +47,6 @@ const completeForm = ref({
 const uploading = ref(false)
 const summaryForm = ref({ content: '' })
 const loadingSummary = ref(false)
-
-function renderContent(text: string): string {
-  return text.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" style="max-width:100%;border-radius:8px;margin:8px 0">')
-    .replace(/\n/g, '<br>')
-}
 
 async function insertAchievementImage() {
   const input = document.createElement('input')

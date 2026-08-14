@@ -78,8 +78,11 @@ router.post('/generate', (req, res) => {
     const result = db.prepare(
       `INSERT INTO tasks (date, title, start_time, end_time, planned_duration, category, priority, note, is_recurring, recurring_template_id, user_id, sync_enabled, planned_days, overall_status)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?, ?, 'pending')`
-    ).run(date, t.title, t.start_time, t.end_time, t.planned_duration, t.category, t.priority, t.note, t.id, userId, t.sync_enabled !== false ? 1 : 0, tPlannedDays);
+    ).run(date, t.title, t.start_time, t.end_time, t.planned_duration, t.category, t.priority, t.note, t.id, userId, t.sync_enabled ? 1 : 0, tPlannedDays);
     created.push(result.lastInsertRowid);
+  }
+  if (created.length === 0) {
+    return res.json([]);
   }
   const tasks = db.prepare('SELECT * FROM tasks WHERE id IN (' + created.map(() => '?').join(',') + ')').all(...created);
   res.json(tasks);

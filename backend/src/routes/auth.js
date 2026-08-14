@@ -65,6 +65,19 @@ router.delete('/account', (req, res) => {
     db.prepare('DELETE FROM recurring_templates WHERE user_id = ?').run(userId);
     db.prepare('DELETE FROM notes WHERE user_id = ?').run(userId);
     db.prepare('DELETE FROM note_categories WHERE user_id = ?').run(userId);
+    db.prepare('DELETE FROM questions WHERE user_id = ?').run(userId);
+    db.prepare('DELETE FROM question_categories WHERE user_id = ?').run(userId);
+    db.prepare('DELETE FROM summaries WHERE user_id = ?').run(userId);
+    db.prepare('DELETE FROM task_summaries WHERE user_id = ?').run(userId);
+    db.prepare('DELETE FROM word_progress WHERE user_id = ?').run(userId);
+    db.prepare('DELETE FROM wrong_words WHERE user_id = ?').run(userId);
+    db.prepare('DELETE FROM learning_logs WHERE user_id = ?').run(userId);
+    db.prepare('DELETE FROM study_sessions WHERE user_id = ?').run(userId);
+    db.prepare('DELETE FROM speaking_records WHERE user_id = ?').run(userId);
+    db.prepare('DELETE FROM scenario_progress WHERE user_id = ?').run(userId);
+    // Clean orphaned link tables
+    db.prepare('DELETE FROM note_task_links WHERE note_id NOT IN (SELECT id FROM notes)').run();
+    db.prepare('DELETE FROM question_task_links WHERE question_id NOT IN (SELECT id FROM questions)').run();
     db.prepare('DELETE FROM users WHERE id = ?').run(userId);
   });
   deleteAll();

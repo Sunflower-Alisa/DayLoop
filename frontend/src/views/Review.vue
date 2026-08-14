@@ -2,7 +2,7 @@
 import { ref, onMounted, inject, computed, watch } from 'vue'
 import { api } from '../api'
 import type { Task, DailyReview } from '../types'
-import { formatDate } from '../utils/format'
+import { formatDate, renderContent } from '../utils/format'
 
 const today = inject<string>('today')!
 const selectedDate = ref(today)
@@ -32,9 +32,19 @@ function shiftDay(delta: number) {
 }
 
 async function loadData(date: string) {
-  tasks.value = await api.getTasks(date)
-  const r = await api.getReview(date)
-  reviewContent.value = r ? r.content : ''
+  try {
+    tasks.value = await api.getTasks(date)
+  } catch (e) {
+    console.error('Failed to load tasks:', e)
+    tasks.value = []
+  }
+  try {
+    const r = await api.getReview(date)
+    reviewContent.value = r ? r.content : ''
+  } catch (e) {
+    console.error('Failed to load review:', e)
+    reviewContent.value = ''
+  }
   generateSummary()
 }
 
@@ -87,11 +97,6 @@ async function saveReview() {
 function statusLabel(s: string): string {
   const map: Record<string, string> = { planned: '计划中', in_progress: '进行中', completed: '已完成', cancelled: '已取消' }
   return map[s] || s
-}
-
-function renderContent(text: string): string {
-  return text.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" style="max-width:100%;border-radius:8px;margin:8px 0">')
-    .replace(/\n/g, '<br>')
 }
 
 function formatDuration(min: number): string {

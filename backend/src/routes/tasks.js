@@ -123,7 +123,7 @@ router.put('/:id', (req, res) => {
       db.prepare(
         `INSERT INTO recurring_templates (title, start_time, end_time, planned_duration, category, priority, note, user_id, planned_days, sync_enabled)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-      ).run(task.title, task.start_time, task.end_time, task.planned_duration, task.category, task.priority, task.note, userId, task.planned_days || 1, task.sync_enabled !== false ? 1 : 0);
+      ).run(task.title, task.start_time, task.end_time, task.planned_duration, task.category, task.priority, task.note, userId, task.planned_days || 1, task.sync_enabled ? 1 : 0);
     }
     const tmpl = db.prepare('SELECT id FROM recurring_templates WHERE user_id = ? AND title = ?').get(userId, task.title);
     if (tmpl) {
@@ -133,17 +133,21 @@ router.put('/:id', (req, res) => {
 
   const { note_id } = req.body;
   if (note_id !== undefined) {
+    // Read old note_id BEFORE updating the task
+    const oldNote = db.prepare('SELECT note_id FROM tasks WHERE id = ?').get(id);
+    const oldNoteId = oldNote ? oldNote.note_id : null;
+    
     db.prepare('UPDATE tasks SET note_id = ? WHERE id = ?').run(note_id, id);
     if (note_id) {
-      const oldNote = db.prepare('SELECT note_id FROM tasks WHERE id = ?').get(id);
-      if (oldNote && oldNote.note_id && oldNote.note_id !== note_id) {
-        db.prepare('UPDATE notes SET task_id = NULL WHERE id = ?').run(oldNote.note_id);
+      // Clear old note's task_id if switching notes
+      if (oldNoteId && oldNoteId !== note_id) {
+        db.prepare('UPDATE notes SET task_id = NULL WHERE id = ?').run(oldNoteId);
       }
       db.prepare('UPDATE notes SET task_id = ? WHERE id = ?').run(id, note_id);
     } else {
-      const oldNote = db.prepare('SELECT note_id FROM tasks WHERE id = ?').get(id);
-      if (oldNote && oldNote.note_id) {
-        db.prepare('UPDATE notes SET task_id = NULL WHERE id = ?').run(oldNote.note_id);
+      // note_id cleared: release old note association
+      if (oldNoteId) {
+        db.prepare('UPDATE notes SET task_id = NULL WHERE id = ?').run(oldNoteId);
       }
     }
   }

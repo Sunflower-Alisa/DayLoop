@@ -139,6 +139,10 @@ router.put('/:id', (req, res) => {
 router.delete('/:id', (req, res) => {
   const { id } = req.params;
   const userId = getUserId(req) || 0;
+  // Verify ownership before modifying data
+  const question = db.prepare('SELECT id, user_id FROM questions WHERE id = ? AND user_id = ?').get(id, userId);
+  if (!question) return res.status(404).json({ error: 'Question not found' });
+  
   db.prepare('DELETE FROM question_task_links WHERE question_id = ?').run(id);
   db.prepare('DELETE FROM questions WHERE id = ? AND user_id = ?').run(id, userId);
   res.json({ message: 'Question deleted' });

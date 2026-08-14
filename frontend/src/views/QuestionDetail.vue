@@ -3,7 +3,7 @@ import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { api } from '../api'
 import type { Question } from '../types'
-import { formatDate } from '../utils/format'
+import { formatDate, renderContent } from '../utils/format'
 
 const route = useRoute()
 const router = useRouter()
@@ -82,7 +82,7 @@ async function insertImage(target: 'content' | 'answer') {
         form.value[target] += markdown
         extractImages(form.value.content + form.value.answer)
       } catch (err) {
-        alert('图片上传失败: ' + err.message)
+        alert('图片上传失败: ' + (err instanceof Error ? err.message : '未知错误'))
       } finally {
         uploading.value = false
       }
@@ -128,11 +128,6 @@ function answerSourceLabel(s: string): string {
   const map: Record<string, string> = { self: '自答', ai: 'AI 回答', web: '网络搜索' }
   return map[s] || s
 }
-
-function formatContent(text: string): string {
-  return text.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" style="max-width:100%;border-radius:8px;margin:8px 0">')
-    .replace(/\n/g, '<br>')
-}
 </script>
 
 <template>
@@ -168,7 +163,7 @@ function formatContent(text: string): string {
           <button class="toolbar-btn" @click="previewMode = !previewMode">{{ previewMode ? '✏️ 编辑' : '👁️ 预览' }}</button>
         </div>
         <textarea v-if="!previewMode" v-model="form.content" placeholder="输入问题详情，支持插入图片" rows="6"></textarea>
-        <div v-else class="preview-content" v-html="formatContent(form.content)"></div>
+        <div v-else class="preview-content" v-html="renderContent(form.content)"></div>
       </div>
 
       <div class="form-group">

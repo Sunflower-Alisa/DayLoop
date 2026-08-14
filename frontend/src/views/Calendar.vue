@@ -122,14 +122,30 @@ function totalDuration(tasks: Task[]): number {
 function freeTime(date: string): string {
   const dayTasks = tasksForDate(date).filter(t => t.start_time && t.end_time)
   if (dayTasks.length === 0) return '全天空闲'
-  let occupied = 0
+  
+  // Merge overlapping intervals per FEATURES.md spec
+  const intervals: { start: number; end: number }[] = []
   for (const t of dayTasks) {
     const [sh, sm] = t.start_time!.split(':').map(Number)
     const [eh, em] = t.end_time!.split(':').map(Number)
-    occupied += eh * 60 + em - (sh * 60 + sm)
+    intervals.push({ start: sh * 60 + sm, end: eh * 60 + em })
   }
-
-  const freeMin = 600 - occupied
+  intervals.sort((a, b) => a.start - b.start)
+  
+  // Merge overlapping
+  const merged = [intervals[0]]
+  for (let i = 1; i < intervals.length; i++) {
+    const last = merged[merged.length - 1]
+    if (intervals[i].start <= last.end) {
+      last.end = Math.max(last.end, intervals[i].end)
+    } else {
+      merged.push(intervals[i])
+    }
+  }
+  
+  const occupied = merged.reduce((sum, m) => sum + (m.end - m.start), 0)
+  const totalWindow = 720 // 12h window per spec (6:00-18:00)
+  const freeMin = totalWindow - occupied
   if (freeMin >= 480) return '充裕'
   if (freeMin >= 240) return '较多'
   if (freeMin >= 120) return '适中'

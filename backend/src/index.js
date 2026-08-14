@@ -86,11 +86,20 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '..', '..', 'frontend', 'dist', 'index.html'));
 });
 
+// Global error handler - catches all unhandled errors
+app.use((err, req, res, next) => {
+  console.error('[Error]', err.message || err);
+  if (req.path.startsWith('/api')) {
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+  res.status(500).send('Internal server error');
+});
+
 // Auto-generate recurring tasks every midnight
 const generateNextDayTasks = () => {
   const tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
-  const dateStr = tomorrow.toISOString().slice(0, 10);
+  const dateStr = tomorrow.toLocaleDateString('en-CA');
   try {
     const templates = db.prepare('SELECT * FROM recurring_templates').all();
     let count = 0;
@@ -110,7 +119,7 @@ const generateNextDayTasks = () => {
       db.prepare(
         `INSERT INTO tasks (date, title, start_time, end_time, planned_duration, category, priority, note, is_recurring, recurring_template_id, sync_enabled, planned_days, overall_status)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?, 'pending')`
-      ).run(dateStr, t.title, t.start_time, t.end_time, t.planned_duration, t.category, t.priority, t.note, t.id, t.sync_enabled !== false ? 1 : 0, tPlannedDays);
+      ).run(dateStr, t.title, t.start_time, t.end_time, t.planned_duration, t.category, t.priority, t.note, t.id, t.sync_enabled ? 1 : 0, tPlannedDays);
       count++;
     }
     if (count > 0) console.log(`[Scheduler] Generated ${count} recurring tasks for ${dateStr}`);
@@ -125,7 +134,7 @@ console.log('[Scheduler] Registered: auto-generate recurring tasks at 09:00');
 // Auto-generate summaries at 22:00 on last day of each period
 const autoGenerateSummaries = () => {
   const today = new Date();
-  const todayStr = today.toISOString().slice(0, 10);
+  const todayStr = today.toLocaleDateString('en-CA');
   const year = today.getFullYear();
   const month = today.getMonth() + 1;
   const day = today.getDate();
